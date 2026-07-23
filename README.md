@@ -32,7 +32,7 @@ In your recipes (`conanfile.py`), you can add the CUDA Toolkit as a requirement 
 ```
 def requirements(self):
     self.requires("cuda-toolkit/13.2.0")
-    self.tool_requires("cuda-toolkit/<host_version>)
+    self.tool_requires("cuda-toolkit/<host_version>")
 ```
 
 In your `CMakeLists.txt`
@@ -41,6 +41,13 @@ In your `CMakeLists.txt`
 enable_language(CUDA)
 find_package(CUDAToolkit)
 ```
+
+Note that both `requires` and `tool_requires` are required, as they satisfy two distinct use cases:
+- the `tool_requires` exposes `nvcc` and related utilities to the build context
+- the `requires` expose the libraries (include dirs, library paths, runtime), both during the build and at runtime when needed.
+
+When not cross-building (`os` and `arch` Conan settings are the same in both host and build profiles), both are satisfied by exactly the same package.
+When cross-building, Conan will ensure to fetch a package with an `nvcc` that can run on the machine doing the build (the `tool_requires`), but point it to libraries that are compatible with your target platform (the `requires`.)
 
 ### Recipes available in this repository
 - `cuda-toolkit`
