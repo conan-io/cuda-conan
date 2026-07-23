@@ -4,7 +4,7 @@ from pathlib import Path
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
-from conan.tools.files import copy, download, get, load, patch, rename, replace_in_file
+from conan.tools.files import copy, download, get, load, rename, replace_in_file
 
 class CudaToolkitConan(ConanFile):
     name = "cuda-toolkit"
