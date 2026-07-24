@@ -1,0 +1,18 @@
+sources:
+  "0.8.1":
+    Linux:
+      x86_64:
+        "cuda-12":
+          url: "https://developer.download.nvidia.com/compute/cusparselt/redist/libcusparse_lt/linux-x86_64/libcusparse_lt-linux-x86_64-0.8.1.1_cuda12-archive.tar.xz"
+          sha256: "b34272e683e9f798435af05dc124657d1444cd0e13802c3d2f3152e31cd898a3"
+        "cuda-13":
+          url: "https://developer.download.nvidia.com/compute/cusparselt/redist/libcusparse_lt/linux-x86_64/libcusparse_lt-linux-x86_64-0.8.1.1_cuda13-archive.tar.xz"
+          sha256: "82dd3e5ebc199a27011f58857a80cd825e77bba634ab2286ba3d4e13115db89a"
+    Windows:
+      x86_64:
+        "cuda-12":
+          url: "https://developer.download.nvidia.com/compute/cusparselt/redist/libcusparse_lt/windows-x86_64/libcusparse_lt-windows-x86_64-0.8.1.1_cuda12-archive.zip"
+          sha256: "1a1a4be5c2da47e242d3fbab35b66077916aeb2b8175bc6a0a6691e11972951c"
+        "cuda-13":
+          url: "https://developer.download.nvidia.com/compute/cusparselt/redist/libcusparse_lt/windows-x86_64/libcusparse_lt-windows-x86_64-0.8.1.1_cuda13-archive.zip"
+          sha256: "d83c3a9c34df98aa999e6a64278a36eb837b411af593d41fe74746a2915e379d"
