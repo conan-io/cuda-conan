@@ -1,0 +1,22 @@
+sources:
+  "9.24.0":
+    Windows:
+      x86_64:
+        "cuda-12":
+          url: "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.24.0.43_cuda12-archive.zip"
+          sha256: "b190b5d2c2a1634606ca8f843cde84fdc762ba92ddb8b73bda9fb894c673b767"
+        "cuda-13":
+          url: "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/windows-x86_64/cudnn-windows-x86_64-9.24.0.43_cuda13-archive.zip"
+          sha256: "88f72bd1ce384197cedbc68496c6052d7ff0bd9fd0b3c74470402cf737507e06"
+    Linux:
+      x86_64:
+        "cuda-12":
+          url: "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-9.24.0.43_cuda12-archive.tar.xz"
+          sha256: "7dea7fc8436fdd65cb22cd6634e5a2834e4a8508217abea5286c15affa9a80a0"
+        "cuda-13":
+          url: "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-9.24.0.43_cuda13-archive.tar.xz"
+          sha256: "63f1900222c69ee7e94583408181ccdb988dc2833531ce6bde0df43bbdd04a6d"
+      armv8:
+        "cuda-13":
+          url: "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-sbsa/cudnn-linux-sbsa-9.24.0.43_cuda13-archive.tar.xz"
+          sha256: "f9b71a8a070073f20224746d9216ac4e28de7f59b54a8c47200ff506e6d4d830"
