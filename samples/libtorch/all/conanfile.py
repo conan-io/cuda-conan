@@ -33,6 +33,7 @@ class LibtorchRecipe(ConanFile):
         "with_mimalloc": [True, False],
         "with_nnpack": [True, False],
         "with_numa": [True, False],
+        "with_cuda": [True, False],
     }
     default_options = {
         "shared": False,
@@ -42,6 +43,7 @@ class LibtorchRecipe(ConanFile):
         "with_mimalloc": False,
         "with_nnpack": True,
         "with_numa": True,
+        "with_cuda": True,
     }
 
     implements = ["auto_shared_fpic"]
@@ -116,9 +118,18 @@ class LibtorchRecipe(ConanFile):
         if self.options.get_safe("with_numa"):
             self.requires("libnuma/2.0.19")
 
+        if self.options.with_cuda:
+            self.requires("cuda-toolkit/[>=12 <=13.1]")
+            self.requires("cudnn/[>=9 <10]")
+            self.requires("cudnn-frontend/1.12.1")
+            self.requires("cusparselt/0.8.1")
+            self.requires("cudss/0.7.1")
+            self.requires("cutlass/4.3.5")
+
     def build_requirements(self):
         self.tool_requires("cmake/[>=3.27]")
         self.tool_requires("protobuf/<host_version>")
+        self.tool_requires("cuda-toolkit/<host_version>")
 
     def validate(self):
         check_min_cppstd(self, 17)
@@ -133,7 +144,7 @@ class LibtorchRecipe(ConanFile):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
         apply_conandata_patches(self)
         # Remove unneeded third_party folders
-        third_party_allowed = ["miniz-3.0.2", "kineto"]
+        third_party_allowed = ["flash-attention","miniz-3.0.2", "kineto"]
         for folder in Path(self.source_folder).joinpath("third_party").iterdir():
             if folder.is_dir() and folder.name not in third_party_allowed:
                 rmdir(self, folder)
@@ -170,6 +181,8 @@ class LibtorchRecipe(ConanFile):
         deps.set_property("pthreadpool", "cmake_target_name", "pthreadpool")
         deps.set_property("sleef", "cmake_target_name", "sleef")
         deps.set_property("xnnpack", "cmake_target_name", "XNNPACK")
+        deps.set_property("cudnn", "cmake_file_name", "CUDNN")
+        deps.set_property("cusparselt", "cmake_file_name", "CUSPARSELT")
         deps.generate()
 
         tc = CMakeToolchain(self)
@@ -196,7 +209,6 @@ class LibtorchRecipe(ConanFile):
 
         tc.cache_variables["USE_DISTRIBUTED"] = False
         tc.cache_variables["USE_CCACHE"] = False
-        tc.cache_variables["USE_CUDA"] = False
         tc.cache_variables["USE_FBGEMM"] = False  # TODO unvendor after adding to CCI
         tc.cache_variables["USE_GLOO"] = False    # TODO unvendor after adding to CCI
         tc.cache_variables["USE_KINETO"] = False  # TODO unvendor after adding to CCI
@@ -204,6 +216,13 @@ class LibtorchRecipe(ConanFile):
         tc.cache_variables["USE_MPI"] = False
         tc.cache_variables["USE_NUMPY"] = False
         tc.cache_variables["USE_TENSORPIPE"] = self.settings.os == "Windows"
+
+        # CUDA support
+        tc.cache_variables["TORCH_CUDA_ARCH_LIST"] = "7.5"
+        tc.cache_variables["USE_CUDA"] = self.options.with_cuda
+        tc.cache_variables["USE_CUDNN"] = self.options.with_cuda
+        tc.cache_variables["USE_CUSPARSELT"] = self.options.with_cuda
+        tc.cache_variables["USE_CUDSS"] = self.options.with_cuda
 
         if not self._has_backtrace:
             tc.cache_variables["CMAKE_DISABLE_FIND_PACKAGE_Backtrace"] = True
@@ -244,7 +263,13 @@ class LibtorchRecipe(ConanFile):
             libname = lib_name if self.settings.os == "Windows" else 'lib' + lib_name
             lib_path = os.path.join(self.package_folder, component.libdir, libname)
             if self.options.shared:
-                return component
+                if self.settings.os != "Linux":
+                    return component
+                else:
+                    flags = f"-Wl,--push-state,--no-as-needed,{lib_path}.so,--pop-state"
+                    component.exelinkflags.append(flags)
+                    component.sharedlinkflags.append(flags)
+                    return component
             flags = ""
             if is_apple_os(self):
                 flags = f"-Wl,-force_load,{lib_path + '.a'}"
@@ -336,9 +361,49 @@ class LibtorchRecipe(ConanFile):
         if self.options.get_safe("with_numa"):
             torch_cpu.requires.append("libnuma::libnuma")
 
+        
+        if self.options.with_cuda:
+            # c10 cuda
+            c10_cuda = _whole_archive(self.cpp_info.components["c10_cuda"], "c10_cuda")
+            c10_cuda.requires = ["cuda-toolkit::cuda-toolkit"]
+            c10_cuda.set_property("cmake_extra_interface_libs", ["CUDA::cudart"])
+
+            # Torch cuda
+            torch_cuda = _whole_archive(self.cpp_info.components["torch_cuda"], "torch_cuda")
+            torch_cuda.libs = ["torch_cuda"]
+            if is_msvc(self) and self.options.shared:
+                torch_cuda.exelinkflags.append("-INCLUDE:?warp_size@cuda@at@@YAHXZ")
+                torch_cuda.sharedlinkflags.append("-INCLUDE:?warp_size@cuda@at@@YAHXZ")
+            torch_cuda.requires = [
+                "c10",
+                "c10_cuda",
+                "cudnn::cudnn",
+                "cudnn-frontend::cudnn-frontend",
+                "torch_cpu",
+                "fmt::fmt",
+                "cutlass::cutlass",
+                "cudss::cudss",
+                "cusparselt::cusparselt",
+            ]
+            cmake_cuda_targets = ["CUDA::cudart",
+                "CUDA::cusparse",
+                "CUDA::cusolver",
+                "CUDA::cufft",
+                "CUDA::curand",
+                "CUDA::cublas",
+                "CUDA::cublasLt",
+                "CUDA::nvrtc",
+                ]
+            if self.settings.os == "Linux":
+                cmake_cuda_targets.append("CUDA::cuFile")
+                cmake_cuda_targets.append("CUDA::cuda_driver")
+            torch_cuda.set_property("cmake_extra_interface_libs", cmake_cuda_targets)
+
         # Torch global component
         self.cpp_info.components["torch"].libs = ["torch"]
         self.cpp_info.components["torch"].requires = ["torch_cpu"]
+        if self.options.with_cuda:
+            self.cpp_info.components["torch"].requires.append("torch_cuda")
         self.cpp_info.components["torch"].includedirs = ["include/torch/csrc/api/include", "include"]
 
         if self.settings.os in ["Linux", "FreeBSD"]:
