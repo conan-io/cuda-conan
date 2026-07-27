@@ -42,6 +42,17 @@ enable_language(CUDA)
 find_package(CUDAToolkit)
 ```
 
+Express your desired CUDA GPU architecture to use when recipes are built from source with CUDA support.
+Please refer to CMake [documentation](https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html) for reference.
+While this can be left unspecified in some cases, libraries tend to target multiple architectures in those scenarios, 
+resulting in longer build times.
+
+In your Conan profile:
+```
+[conf]
+tools.cmake.cmaketoolchain:extra_variables={'CMAKE_CUDA_ARCHITECTURES':'75;87-real'}
+```
+
 Note that both `requires` and `tool_requires` are required, as they satisfy two distinct use cases:
 - the `tool_requires` exposes `nvcc` and related utilities to the build context
 - the `requires` expose the libraries (include dirs, library paths, runtime), both during the build and at runtime when needed.

@@ -139,6 +139,7 @@ class LibtorchRecipe(ConanFile):
 
     def export_sources(self):
         export_conandata_patches(self)
+        copy(self, "torch_cuda_arch_list.cmake", src=self.recipe_folder, dst=os.path.join(self.export_sources_folder, "src"))
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
@@ -218,7 +219,7 @@ class LibtorchRecipe(ConanFile):
         tc.cache_variables["USE_TENSORPIPE"] = self.settings.os == "Windows"
 
         # CUDA support
-        tc.cache_variables["TORCH_CUDA_ARCH_LIST"] = "7.5"
+        tc.cache_variables["CMAKE_PROJECT_TOP_LEVEL_INCLUDES"] = os.path.join(self.source_folder, "torch_cuda_arch_list.cmake")
         tc.cache_variables["USE_CUDA"] = self.options.with_cuda
         tc.cache_variables["USE_CUDNN"] = self.options.with_cuda
         tc.cache_variables["USE_CUSPARSELT"] = self.options.with_cuda
