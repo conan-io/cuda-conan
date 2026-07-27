@@ -50,7 +50,7 @@ resulting in longer build times.
 In your Conan profile:
 ```
 [conf]
-tools.cmake.cmaketoolchain:extra_variables={'CMAKE_CUDA_ARCHITECTURES':'75;87-real'}
+tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_CUDA_ARCHITECTURES':'75;87-real'}
 ```
 
 Note that both `requires` and `tool_requires` are required, as they satisfy two distinct use cases:
