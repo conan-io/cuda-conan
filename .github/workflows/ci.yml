@@ -35,6 +35,14 @@ jobs:
 
       - name: Setup Conan
         uses: conan-io/setup-conan@v1
+        with:
+          profile_detect: false
+
+      - name: Autodetect conan profile
+        run: conan profile detect --name autodetected
+
+      - name: Install Conan profile config
+        run: conan config install .github/conan-config -t dir
 
       - name: conan create cuda-toolkit
         run: conan create recipes/cuda-toolkit/${{ matrix.cuda-version }}
@@ -58,4 +66,4 @@ jobs:
         # version 2.9.1 of libtorch did not work with newer CUDA,
         # we build it against 12.9 and 13.0
         if: matrix.cuda-version != '13.2'
-        run: conan create samples/libtorch/all --version 2.9.1
+        run: conan create samples/libtorch/all --version 2.9.1 -o "*:shared=True"

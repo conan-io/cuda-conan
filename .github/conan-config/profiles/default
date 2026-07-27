@@ -1,0 +1,4 @@
+include(autodetected)
+
+[settings]
+compiler.cppstd={% if platform.system() == "Windows" %}17{% else %}gnu17{% endif %}
