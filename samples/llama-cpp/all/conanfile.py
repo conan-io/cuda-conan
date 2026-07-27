@@ -33,7 +33,7 @@ class LlamaCppConan(ConanFile):
         "shared": False,
         "fPIC": True,
         "with_examples": False,
-        "with_cuda": False,
+        "with_cuda": True,
         "with_curl": False,
         "with_vulkan": False,
     }
@@ -45,21 +45,6 @@ class LlamaCppConan(ConanFile):
             del self.options.fPIC
         if is_apple_os(self):
             del self.options.with_vulkan
-
-    @property
-    def _cuda_build_module(self):
-        # Adding this to the package info is necessary if we want consumers of llama to link correctly when
-        # they activate the CUDA option. In the future, when we have a CUDA recipe this could be removed.
-        cuda_target = "ggml-cuda"
-        return textwrap.dedent(f"""\
-            find_dependency(CUDAToolkit REQUIRED)
-            if (WIN32)
-                # As of CUDA 12.3.1, Windows does not offer a static cublas library
-                target_link_libraries({cuda_target} INTERFACE CUDA::cudart_static CUDA::cublas CUDA::cublasLt CUDA::cuda_driver)
-            else ()
-                target_link_libraries({cuda_target} INTERFACE CUDA::cudart_static CUDA::cublas_static CUDA::cublasLt_static CUDA::cuda_driver)
-            endif()
-        """)
 
     def validate(self):
         check_min_cppstd(self, 17)
@@ -78,7 +63,10 @@ class LlamaCppConan(ConanFile):
         if self.options.get_safe("with_vulkan"):
             self.requires("vulkan-loader/[>=1.3 <1.5]")
 
-    def build_requirements(self):
+        if self.options.with_cuda:
+            self.requires("cuda-toolkit/[>=12.0 <14]")
+            self.tool_requires("cuda-toolkit/<host_version>")
+
         if self.options.get_safe("with_vulkan"):
             self.tool_requires("shaderc/[>=2025.3]")
 
@@ -104,6 +92,8 @@ class LlamaCppConan(ConanFile):
         # right now it tries to add_subdirectory to a non-existent folder
         tc.variables["GGML_BUILD_EXAMPLES"] = False
         tc.variables["GGML_CUDA"] = self.options.get_safe("with_cuda")
+        if self.settings.compiler in ("msvc", "clang") and self.options.get_safe("with_cuda"):
+            tc.cache_variables['CMAKE_CUDA_FLAGS'] = '-Xcompiler /Zc:preprocessor '
 
         if self.options.get_safe("with_vulkan"):
             tc.variables["GGML_VULKAN"] = True
@@ -130,8 +120,6 @@ class LlamaCppConan(ConanFile):
         copy(self, "*common*.so", src=self.build_folder, dst=os.path.join(self.package_folder, "lib"), keep_path=False)
         copy(self, "*common*.dylib", src=self.build_folder, dst=os.path.join(self.package_folder, "lib"), keep_path=False)
         copy(self, "*common*.a", src=self.build_folder, dst=os.path.join(self.package_folder, "lib"), keep_path=False)
-        if self.options.with_cuda and not self.options.shared:
-            save(self, os.path.join(self.package_folder, "lib", "cmake", "llama-cpp-cuda-static.cmake"), self._cuda_build_module)
 
     def _get_backends(self):
         results = ["cpu"]
@@ -168,11 +156,6 @@ class LlamaCppConan(ConanFile):
         elif self.settings.os in ("Linux", "FreeBSD"):
             self.cpp_info.components["common"].system_libs.extend(["dl", "m", "pthread", "gomp"])
 
-        if self.options.with_cuda and not self.options.shared:
-            self.cpp_info.builddirs.append(os.path.join("lib", "cmake"))
-            module_path = os.path.join("lib", "cmake", "llama-cpp-cuda-static.cmake")
-            self.cpp_info.set_property("cmake_build_modules", [module_path])
-
         self.cpp_info.components["ggml-base"].libs = ["ggml-base"]
         self.cpp_info.components["ggml-base"].resdirs = ["res"]
         self.cpp_info.components["ggml-base"].set_property("cmake_target_name", "ggml-base")
@@ -196,6 +179,9 @@ class LlamaCppConan(ConanFile):
                 self.cpp_info.components[f"ggml-{backend}"].defines.append("GGML_BACKEND_SHARED")
             self.cpp_info.components["ggml"].defines.append(f"GGML_USE_{backend.upper()}")
             self.cpp_info.components["ggml"].requires.append(f"ggml-{backend}")
+            if backend == "cuda":
+                self.cpp_info.components["ggml-cuda"].set_property("cmake_extra_interface_libs",
+                            ["CUDA::cudart", "CUDA::cublas", "CUDA::cublasLt", "CUDA::cuda_driver"])
 
             if backend == "vulkan":
                 self.cpp_info.components["ggml-vulkan"].requires.append("vulkan-loader::vulkan-loader")
