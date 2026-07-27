@@ -36,5 +36,26 @@ jobs:
       - name: Setup Conan
         uses: conan-io/setup-conan@v1
 
-      - name: conan create
+      - name: conan create cuda-toolkit
         run: conan create recipes/cuda-toolkit/${{ matrix.cuda-version }}
+
+      - name: conan create cudnn
+        run: conan create recipes/cudnn/9.x --version 9.24.0
+
+      - name: conan create cudnn-frontend
+        run: conan create recipes/cudnn-frontend/all --version 1.12.1
+
+      - name: conan create cudss
+        run: conan create recipes/cudss/0.7.1 --version 0.7.1
+
+      - name: conan create cusparselt
+        run: conan create recipes/cusparselt/0.8.1 --version 0.8.1
+
+      - name: conan create cutlass
+        run: conan create recipes/cutlass/all --version 4.3.5
+
+      - name: conan create libtorch
+        # version 2.9.1 of libtorch did not work with newer CUDA,
+        # we build it against 12.9 and 13.0
+        if: matrix.cuda-version != '13.2'
+        run: conan create samples/libtorch/all --version 2.9.1
