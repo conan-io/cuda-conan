@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  create-recipes:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cuda-version: "12.9"
+          - os: ubuntu-latest
+            cuda-version: "13.0"
+          - os: ubuntu-latest
+            cuda-version: "13.2"
+          # Windows:
+          # cuda <13.2 requires Visual Studio 2022, available on windows-2022 runner
+          - os: windows-2022
+            cuda-version: "12.9"
+          - os: windows-2022
+            cuda-version: "13.0"
+          # cuda >=13.2 can run on windows-latest (Visual Studio 2026)
+          - os: windows-latest
+            cuda-version: "13.2"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Conan
+        uses: conan-io/setup-conan@v1
+        with:
+          profile_detect: false
+
+      - name: Autodetect conan profile
+        run: conan profile detect --name autodetected
+
+      - name: Install Conan profile config
+        run: conan config install .github/conan-config -t dir
+
+      - name: conan create cuda-toolkit
+        run: conan create recipes/cuda-toolkit/${{ matrix.cuda-version }}
+
+      - name: conan create cudnn
+        run: conan create recipes/cudnn/9.x --version 9.24.0
+
+      - name: conan create cudnn-frontend
+        run: conan create recipes/cudnn-frontend/all --version 1.12.1
+
+      - name: conan create cudss
+        run: conan create recipes/cudss/0.7.1 --version 0.7.1
+
+      - name: conan create cusparselt
+        run: conan create recipes/cusparselt/0.8.1 --version 0.8.1
+
+      - name: conan create cutlass
+        run: conan create recipes/cutlass/all --version 4.3.5
+
+    # TODO: build samples
