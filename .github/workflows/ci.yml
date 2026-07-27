@@ -10,8 +10,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        cuda-version: ["12.9", "13.0", "13.2"]
+        include:
+          - os: ubuntu-latest
+            cuda-version: "12.9"
+          - os: ubuntu-latest
+            cuda-version: "13.0"
+          - os: ubuntu-latest
+            cuda-version: "13.2"
+          # Windows:
+          # cuda <13.2 requires Visual Studio 2022, available on windows-2022 runner
+          - os: windows-2022
+            cuda-version: "12.9"
+          - os: windows-2022
+            cuda-version: "13.0"
+          # cuda >=13.2 can run on windows-latest (Visual Studio 2026)
+          - os: windows-latest
+            cuda-version: "13.2"
 
     runs-on: ${{ matrix.os }}
 
