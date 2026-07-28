@@ -25,12 +25,14 @@ class OnnxRuntimeConan(ConanFile):
         "fPIC": [True, False],
         "with_xnnpack": [True, False],
         "with_cuda": [True, False],
+        "with_tensorrt": [True, False],
     }
     default_options = {
         "shared": False,
         "fPIC": True,
         "with_xnnpack": False,
-        "with_cuda": False,
+        "with_cuda": True,
+        "with_tensorrt": False,
     }
     short_paths = True
 
@@ -45,6 +47,8 @@ class OnnxRuntimeConan(ConanFile):
     def configure(self):
         if self.options.shared:
             self.options.rm_safe("fPIC")
+        if not self.options.with_cuda:
+            self.options.rm_safe("with_tensorrt")
 
     def layout(self):
         cmake_layout(self, src_folder="src")
@@ -69,7 +73,12 @@ class OnnxRuntimeConan(ConanFile):
             self.requires("xnnpack/[>=cci.20241203]")
             self.requires("pthreadpool/cci.20231129")
         if self.options.with_cuda:
-            self.requires("cutlass/3.5.0")
+            self.requires("cutlass/4.3.5")
+            self.requires("cuda-toolkit/[>=12 <14]")
+            self.requires("cudnn/[>=9.0 <10]")
+            self.requires("cudnn-frontend/[>=1.0 <2]")
+        if self.options.get_safe("with_tensorrt"):
+            self.requires("tensorrt/[>=10 <11]")
         self.requires("cpuinfo/[>=cci.20250110]")
 
     def validate(self):
@@ -79,18 +88,16 @@ class OnnxRuntimeConan(ConanFile):
             raise ConanInvalidConfiguration(
                 f"{self.ref} requires onnx compiled with `-o onnx:disable_static_registration=True`."
             )
-        if onnx.options.get_safe("shared"):
-            # Commented here: https://github.com/onnx/onnx/pull/7505#issuecomment-3601468150
-            raise ConanInvalidConfiguration("There are link errors using 'onnx/*:shared=True',"
-                                            " use '-o onnx/*:shared=False' instead.")
+        if self.options.get_safe("with_tensorrt") and self.dependencies["tensorrt"].package_type != "shared-library":
+            # Error: multiple definition of `AbslInternalGetFileMappingHint' when linking against static tensorrt
+            raise ConanInvalidConfiguration(f"{self.ref} needs tensorrt to be compiled as shared library")
 
-    def validate_build(self):
-        if self.settings.os == "Windows" and self.dependencies["abseil"].options.shared:
-            raise ConanInvalidConfiguration("Using abseil shared on Windows leads to link errors.")
 
     def build_requirements(self):
         # Required by upstream https://github.com/microsoft/onnxruntime/blob/v1.16.1/cmake/CMakeLists.txt#L5
         self.tool_requires("cmake/[>=3.28]")
+        if self.options.with_cuda:
+            self.tool_requires("cuda-toolkit/<host_version>")
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
@@ -121,6 +128,10 @@ class OnnxRuntimeConan(ConanFile):
         tc.variables["onnxruntime_USE_NEURAL_SPEED"] = False
         tc.variables["onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION"] = False
 
+        if self.options.get_safe("with_tensorrt"):
+            tc.cache_variables["onnxruntime_USE_TENSORRT"] = True
+            tc.cache_variables["onnxruntime_USE_TENSORRT_BUILTIN_PARSER"] = True
+
         # Disable a warning that gets converted to an error
         tc.preprocessor_definitions["_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS"] = "1"
         tc.generate()
@@ -128,6 +139,7 @@ class OnnxRuntimeConan(ConanFile):
         deps = CMakeDeps(self)
         deps.set_property("boost::headers", "cmake_target_name", "Boost::mp11")
         deps.set_property("flatbuffers", "cmake_target_name", "flatbuffers::flatbuffers")
+        deps.set_property("cudnn", "cmake_target_name", "CUDNN::cudnn_all")
         deps.generate()
 
     def _patch_sources(self):
@@ -183,6 +195,20 @@ class OnnxRuntimeConan(ConanFile):
             self.cpp_info.frameworks.append("Foundation")
         if self.settings.os == "Windows":
             self.cpp_info.system_libs.append("shlwapi")
+
+        if self.options.with_cuda:
+            self.cpp_info.set_property(
+                "cmake_extra_interface_libs",
+                [
+                    "CUDA::cublasLt",
+                    "CUDA::cublas",
+                    "CUDA::curand",
+                    "CUDA::cufft",
+                    "CUDA::cudart",
+                ],
+            )
+            if "cuda-toolkit" not in self.dependencies.host:
+                self.cpp_info.set_property("cmake_extra_dependencies", ["CUDAToolkit"])
 
         # https://github.com/microsoft/onnxruntime/blob/v1.16.0/cmake/CMakeLists.txt#L1759-L1763
         self.cpp_info.set_property("cmake_file_name", "onnxruntime")

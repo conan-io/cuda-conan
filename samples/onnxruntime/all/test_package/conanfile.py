@@ -26,6 +26,14 @@ class TestPackageConan(ConanFile):
             for bindir in self.dependencies[self.tested_reference_str].cpp_info.bindirs:
                 copy(self, "*.dll", bindir, os.path.join(self.build_folder, str(self.settings.build_type)))
 
+        if self.settings.os == "Linux" and not self.dependencies["onnxruntime"].options.shared:
+            # the providers are always dlopend() - when the library is static,
+            # onnxruntime attempts to load them from the same directory as the executable
+            # not needed when it is shared (they are loaded relative to the shared library)
+            for libdir in self.dependencies[self.tested_reference_str].cpp_info.libdirs:
+                self.output.info(f"Copying shared libraries from {libdir} to {self.build_folder}")
+                copy(self, "*.so*", libdir, self.build_folder)
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
