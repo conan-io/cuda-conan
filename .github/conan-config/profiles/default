@@ -10,3 +10,5 @@ tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_CUDA_ARCHITECTURES':'75'}
 tools.system.package_manager:mode=install
 tools.system.package_manager:sudo=True
 {% endif %}
+
+cuda-samples/*:tools.cmake.cmaketoolchain:generator=Ninja
