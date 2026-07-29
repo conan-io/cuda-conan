@@ -75,21 +75,21 @@ jobs:
 
       # Skip the following for 13.4-preview
       - name: conan create cudnn
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cudnn/9.x --version 9.24.0 --build=missing
 
       - name: conan create cudnn-frontend
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cudnn-frontend/all --version 1.12.1
 
       - name: conan create cudss
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cudss/0.7.1 --version 0.7.1
 
       - name: conan create cusparselt
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cusparselt/0.8.1 --version 0.8.1
 
       - name: conan create cutlass
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cutlass/all --version 4.3.5
