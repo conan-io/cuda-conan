@@ -1,4 +1,6 @@
 versions:
+  "13.4.0-preview":
+    folder: "13.4"
   "13.2.2":
     folder: "13.2"
   "13.0.3":
