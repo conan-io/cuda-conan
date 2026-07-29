@@ -63,6 +63,14 @@ jobs:
         if: matrix.cross-arch != ''
         run: conan test recipes/cuda-toolkit/${{ matrix.cuda-version }}/test_package cuda-toolkit/13.4.0-preview -s arch=${{ matrix.cross-arch }} -c tools.cmake.cmaketoolchain:generator=Ninja
 
+      - name: build cuda-samples
+        if: matrix.cuda-version == '13.2' || (matrix.cuda-version == '13.4' && startsWith(matrix.os, 'windows'))
+        working-directory: samples/cuda-samples
+        run: |
+          conan source .
+          conan install . --build=missing
+          conan build .
+
       # Skip the following for 13.4-preview
       - name: conan create cudnn
         if: matrix.cuda-version != '13.4'
@@ -83,5 +91,3 @@ jobs:
       - name: conan create cutlass
         if: matrix.cuda-version != '13.4'
         run: conan create recipes/cutlass/all --version 4.3.5
-
-    # TODO: build samples
