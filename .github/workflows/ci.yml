@@ -28,11 +28,11 @@ jobs:
             cuda-version: "13.2"
           # 13.4.0-preview developer preview: Windows x86_64 and arm64
           - os: windows-latest
-            cuda-version: "13.4-preview"
-            cuda-toolkit-version: "13.4.0-preview"
+            cuda-version: "13.4"
+            cross-arch: "armv8" # test x86_64 -> arm64 cross-building, in addition to native
           - os: windows-11-arm
-            cuda-version: "13.4-preview"
-            cuda-toolkit-version: "13.4.0-preview"
+            cuda-version: "13.4"
+            cross-arch: "x86_64" # test arm64 -> x86_64 cross-building, in addition to native
 
     runs-on: ${{ matrix.os }}
 
@@ -52,28 +52,35 @@ jobs:
         run: conan config install .github/conan-config -t dir
 
       - name: conan create cuda-toolkit
-        run: conan create recipes/cuda-toolkit/${{ matrix.cuda-version }} ${{ matrix.cuda-toolkit-version != '' && format('--version {0}', matrix.cuda-toolkit-version) || '' }}
+        run: conan create recipes/cuda-toolkit/${{ matrix.cuda-version }}
 
-      # The following packages don't yet have arm64 binaries / support the 13.4.0-preview
-      # developer preview, so they're skipped for that matrix row.
+      - name: conan create cuda-toolkit (cross-building for ${{ matrix.cross-arch }})
+        if: matrix.cross-arch != ''
+        run: conan create recipes/cuda-toolkit/${{ matrix.cuda-version }} -s arch=${{ matrix.cross-arch }}
+
+      - name: conan test cuda-toolkit (cross-building for ${{ matrix.cross-arch }})
+        if: matrix.cross-arch != ''
+        run: conan test recipes/cuda-toolkit/${{ matrix.cuda-version }}/test_package cuda-toolkit/13.4.0-preview -s arch=${{ matrix.cross-arch }} -c tools.cmake.cmaketoolchain:generator=Ninja
+
+      # Skip the following for 13.4-preview
       - name: conan create cudnn
-        if: matrix.cuda-version != '13.4-preview'
+        if: matrix.cuda-version != '13.4'
         run: conan create recipes/cudnn/9.x --version 9.24.0
 
       - name: conan create cudnn-frontend
-        if: matrix.cuda-version != '13.4-preview'
+        if: matrix.cuda-version != '13.4'
         run: conan create recipes/cudnn-frontend/all --version 1.12.1
 
       - name: conan create cudss
-        if: matrix.cuda-version != '13.4-preview'
+        if: matrix.cuda-version != '13.4'
         run: conan create recipes/cudss/0.7.1 --version 0.7.1
 
       - name: conan create cusparselt
-        if: matrix.cuda-version != '13.4-preview'
+        if: matrix.cuda-version != '13.4'
         run: conan create recipes/cusparselt/0.8.1 --version 0.8.1
 
       - name: conan create cutlass
-        if: matrix.cuda-version != '13.4-preview'
+        if: matrix.cuda-version != '13.4'
         run: conan create recipes/cutlass/all --version 4.3.5
 
     # TODO: build samples

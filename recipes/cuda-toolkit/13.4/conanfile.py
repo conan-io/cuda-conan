@@ -11,6 +11,7 @@ required_conan_version = ">=2.1.0"
 
 class CudaToolkitConan(ConanFile):
     name = "cuda-toolkit"
+    version = "13.4.0-preview"
     package_type = "shared-library"
     license = "CUDA Toolkit End-User License Agreement"
     url = "https://github.com/conan-io/cuda-conan"
