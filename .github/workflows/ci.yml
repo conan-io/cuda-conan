@@ -18,6 +18,8 @@ jobs:
             cuda-version: "13.0"
           - os: ubuntu-latest
             cuda-version: "13.2"
+          - os: ubuntu-24.04-arm
+            cuda-version: "13.2"
           # Windows:
           # cuda <13.2 requires Visual Studio 2022, available on windows-2022 runner
           - os: windows-2022
