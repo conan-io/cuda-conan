@@ -5,4 +5,8 @@ compiler.cppstd={% if platform.system() == "Windows" %}17{% else %}gnu17{% endif
 
 [conf]
 tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_CUDA_ARCHITECTURES':'75'}
+
+{% if platform.system() == "Linux" %}
 tools.system.package_manager:mode=install
+tools.system.package_manager:sudo=True
+{% endif %}
