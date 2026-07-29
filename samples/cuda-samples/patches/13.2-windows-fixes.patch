@@ -1,0 +1,82 @@
+Add missing <iostream> for std::cout in cdpQuadtree.cu
+Disable Windows-specific post-build copy commands in CMakeLists.txt files for several CUDA samples
+(the DLL may not be present, and Conan handles dependencies at runtime)
+
+diff --git a/cpp/3_CUDA_Features/cdpQuadtree/cdpQuadtree.cu b/cpp/3_CUDA_Features/cdpQuadtree/cdpQuadtree.cu
+index 804d255..1c5a105 100644
+--- a/cpp/3_CUDA_Features/cdpQuadtree/cdpQuadtree.cu
++++ b/cpp/3_CUDA_Features/cdpQuadtree/cdpQuadtree.cu
+@@ -30,6 +30,8 @@
+ #include <thrust/host_vector.h>
+ #include <thrust/random.h>
+ 
++#include <iostream>
++
+ // for cuda::std::tuple
+ #include <cuda/std/tuple>
+ 
+diff --git a/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt
+index ee6a980..046c081 100644
+--- a/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt
+@@ -57,7 +57,7 @@ target_compile_features(FilterBorderControlNPP PRIVATE cxx_std_17 cuda_std_17)
+         ${CMAKE_CURRENT_SOURCE_DIR}/data
+         ${CMAKE_CURRENT_BINARY_DIR}/data
+     )
+-    if(WIN32)
++    if(0)
+         add_custom_command(TARGET FilterBorderControlNPP
+         POST_BUILD
+         COMMAND ${CMAKE_COMMAND} -E copy
+diff --git a/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt
+index 0ac3682..0b0e10d 100644
+--- a/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt
+@@ -54,7 +54,7 @@ target_compile_features(boxFilterNPP PRIVATE cxx_std_17 cuda_std_17)
+         ${CMAKE_CURRENT_SOURCE_DIR}/teapot512.pgm
+         ${CMAKE_CURRENT_BINARY_DIR}
+     )
+-    if(WIN32)
++    if(0)
+         add_custom_command(TARGET boxFilterNPP
+         POST_BUILD
+         COMMAND ${CMAKE_COMMAND} -E copy
+diff --git a/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt
+index 5cfffd7..78fe243 100644
+--- a/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt
+@@ -54,7 +54,7 @@ target_compile_features(cannyEdgeDetectorNPP PRIVATE cxx_std_17 cuda_std_17)
+         ${CMAKE_CURRENT_SOURCE_DIR}/teapot512.pgm
+         ${CMAKE_CURRENT_BINARY_DIR}
+     )
+-    if(WIN32)
++    if(0)
+         add_custom_command(TARGET cannyEdgeDetectorNPP
+         POST_BUILD
+         COMMAND ${CMAKE_COMMAND} -E copy
+diff --git a/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt
+index b3e89dc..42a2c58 100644
+--- a/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt
+@@ -54,7 +54,7 @@ if(${FreeImage_FOUND})
+         ${CMAKE_CURRENT_SOURCE_DIR}/../../../Common/data/teapot512.pgm
+         ${CMAKE_CURRENT_BINARY_DIR}/
+     )
+-    if(WIN32)
++    if(0)
+         add_custom_command(TARGET freeImageInteropNPP
+         POST_BUILD
+         COMMAND ${CMAKE_COMMAND} -E copy
+diff --git a/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt
+index 616d2c8..d2930c0 100644
+--- a/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt
+@@ -55,7 +55,7 @@ if(${FreeImage_FOUND})
+         ${CMAKE_CURRENT_SOURCE_DIR}/../../../Common/data/teapot512.pgm
+         ${CMAKE_CURRENT_BINARY_DIR}/
+     )
+-    if(WIN32)
++    if(0)
+         add_custom_command(TARGET histEqualizationNPP
+         POST_BUILD
+         COMMAND ${CMAKE_COMMAND} -E copy
