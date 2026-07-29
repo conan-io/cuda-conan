@@ -1,13 +1,14 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.25)
 
 project(PackageTest LANGUAGES CXX CUDA)
 
-# Note: this will fall back to CMake's built-in find module
-# if the package keeps the structure CMake knows about,
-# it will locate the libraries relative to where it found nvcc
-# Note2: this is only for demonstrations purposes
 find_package(CUDAToolkit REQUIRED)
+
+message("CUDAToolkit_VERSION: ${CUDAToolkit_VERSION}")
 message("CUDAToolkit_BIN_DIR: ${CUDAToolkit_BIN_DIR}")
+message("CUDAToolkit_LIBRARY_DIR: ${CUDAToolkit_LIBRARY_DIR}")
+message("CUDAToolkit_LIBRARY_ROOT: ${CUDAToolkit_LIBRARY_ROOT}")
+message("CUDAToolkit_NVCC_EXECUTABLE: ${CUDAToolkit_NVCC_EXECUTABLE}")
 
-add_executable(example example.cu)
-
+add_executable(example hello_cuda.cu)
+target_compile_options(example PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--verbose>)

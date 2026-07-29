@@ -2,11 +2,12 @@ import os
 
 from conan import ConanFile
 from conan.tools.build import can_run
-from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
+from conan.tools.cmake import CMake, cmake_layout
 
 
 class CudatoolkitTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
+    generators = "CMakeDeps", "CMakeToolchain"
 
     def requirements(self):
         self.requires(self.tested_reference_str)
@@ -14,11 +15,6 @@ class CudatoolkitTestConan(ConanFile):
 
     def layout(self):
         cmake_layout(self, src_folder='.')
-
-    def generate(self):
-        tc = CMakeToolchain(self)
-        tc.cache_variables["CMAKE_CUDA_ARCHITECTURES"] = "87-real"
-        tc.generate()
 
     def build(self):
         cmake = CMake(self)
