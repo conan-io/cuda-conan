@@ -70,7 +70,7 @@ jobs:
         working-directory: samples/cuda-samples
         run: |
           conan source .
-          conan install . --build=missing
+          conan install . --build=missing -cc core.version_ranges:resolve_prereleases=True
           conan build .
 
       # Skip the following for 13.4-preview
