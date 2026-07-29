@@ -1,0 +1,11 @@
+sources:
+  "13.4.0-preview":
+    Windows:
+      x86_64:
+        url: "https://packages.nvidia.com/prerelease/cuda/13.4.0/local_installers/cuda_13.4.0_windows_x86_64.exe"
+        sha256: "b743a3323116bf33404953ef58a9b9a3319368241f6352e933e9461409e9a759"
+        md5: "68026c390d4ab3802ea3eb37d7054649"
+      armv8:
+        url: "https://packages.nvidia.com/prerelease/cuda/13.4.0/local_installers/cuda_13.4.0_windows_arm64.exe"
+        sha256: "a1f68c81160b16d519c4087788b9c07de41306c3f1b872471ceee0996621374d"
+        md5: "bff92fe87ba1da3656ee0fd22615eadb"
