@@ -71,12 +71,12 @@ jobs:
         run: |
           conan source .
           conan install . --build=missing -cc core.version_ranges:resolve_prereleases=True
-          conan build .
+          conan build . -cc core.version_ranges:resolve_prereleases=True
 
       # Skip the following for 13.4-preview
       - name: conan create cudnn
         if: matrix.cuda-version != '13.4'
-        run: conan create recipes/cudnn/9.x --version 9.24.0
+        run: conan create recipes/cudnn/9.x --version 9.24.0 --build=missing
 
       - name: conan create cudnn-frontend
         if: matrix.cuda-version != '13.4'
