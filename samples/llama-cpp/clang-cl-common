@@ -1,0 +1,33 @@
+{% set msvc, msvc_version, _ = detect_api.detect_msvc_compiler() %}
+{# msvc_version is e.g. "193", "194", "195" — first two digits = toolset generation #}
+{% set toolset_map = {"190": "v140", "191": "v141", "192": "v142", "193": "v143", "194": "v144", "195": "v145"} %}
+{% set runtime_version = toolset_map.get(msvc_version|string|truncate(3, end=''), "v143") %}
+
+{# Derive the VS install path from the registry via vswhere #}
+{% set vswhere = subprocess.check_output(
+    ['C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe',
+     '-latest', '-property', 'installationPath'],
+    stderr=subprocess.DEVNULL
+).decode().strip() %}
+
+{# Read the clang-cl version from its manifest file inside the VS install — no dev prompt needed #}
+{% set clang_exe = vswhere + '\\VC\\Tools\\Llvm\\x64\\bin\\clang-cl.exe' %}
+{% set clang_version = subprocess.check_output(
+    [clang_exe, '--version'],
+    stderr=subprocess.STDOUT
+).decode().split('version ')[1].split('.')[0].strip() %}
+
+[settings]
+build_type=Release
+compiler=clang
+compiler.cppstd=17
+compiler.runtime=dynamic
+compiler.version={{ clang_version }}
+compiler.runtime_version={{ runtime_version }}
+os=Windows
+
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:compiler_executables={"c": "clang-cl", "cpp": "clang-cl"}
+tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_CUDA_ARCHITECTURES':'87-real'}

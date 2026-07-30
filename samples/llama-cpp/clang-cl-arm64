@@ -1,0 +1,8 @@
+include(clang-cl-common)
+
+[settings]
+arch=armv8
+
+[conf]
+tools.build:cflags=['--target=aarch64-pc-windows-msvc']
+tools.build:cxxflags=['--target=aarch64-pc-windows-msvc']

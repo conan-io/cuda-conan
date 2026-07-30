@@ -1,0 +1,4 @@
+include(clang-cl-common)
+
+[settings]
+arch=x86_64
