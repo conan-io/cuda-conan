@@ -63,7 +63,7 @@ conan create . -s arch=armv8
 
 When cross-building, Conan ensures that `nvcc` runs on your x86_64 workstation, while the CUDA libraries linked into your application are ARM64.
 
-## Example: building and running `cuda-samples`
+## Example 1: building and running `cuda-samples`
 
 [`cuda-samples`](https://github.com/NVIDIA/cuda-samples) is NVIDIA's official collection of example CUDA
 applications. It ranges from minimal examples like
@@ -102,6 +102,27 @@ build\Release\cpp\1_Utilities\deviceQuery\deviceQuery.exe
 
 The application should launch successfuly. If there is no GPU with an NVIDIA driver installed, it should simply report that cudaGetDeviceCount returned an error querying the devices.
 
+
+## Example 2: building `llama-cpp` for Windows ARM64 with CUDA support for RTX Spark
+
+[`llama.cpp`](https://github.com/ggml-org/llama.cpp) is a widely used, dependency-light C/C++ inference engine
+for LLaMA and other GGUF-format language models. It's one of the most popular ways to run LLMs locally, with
+over 80k stars on GitHub, and is the engine behind many downstream projects (Ollama, LM Studio, and others).
+
+This repository contains a recipe to build `llama.cpp` from source using CUDA from Conan, including support
+for Windows ARM64:
+
+```
+cd samples/llama-cpp
+conan create all --version=b6565 -pr clang-cl-arm64 -cc core.version_ranges:resolve_prereleases=True
+```
+
+This command can be run on x86_64 Windows and ARM64 Windows. You can customize the CUDA GPU architecture by editing the profile at `samples/llama-cpp/clang-cl-common`.
+
+> [!IMPORTANT]
+> Windows ARM64 builds of `llama.cpp` currently currently require building with **Clang** (`clang-cl`), rather than MSVC's
+> `cl.exe`. Clang can be installed via the **Visual Studio Installer**: under **Individual components**, search
+> for **"Clang"** and select the **C++ Clang Compiler for Windows** component, then apply.
 
 ## Current limitations
 

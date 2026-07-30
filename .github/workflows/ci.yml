@@ -73,10 +73,11 @@ jobs:
           conan install . --build=missing -cc core.version_ranges:resolve_prereleases=True
           conan build . -cc core.version_ranges:resolve_prereleases=True
 
+      # Build llama-cpp for Windows arm64, both natively and crossbuilt from x86_64
       - name: conan create llama-cpp
         if: matrix.cuda-version == '13.4' && startsWith(matrix.os, 'windows')
         working-directory: samples/llama-cpp
-        run: conan create all --version=b6565 -cc core.version_ranges:resolve_prereleases=True --build=missing${{ matrix.os == 'windows-11-arm' && ' -pr clang-cl-arm64' || '' }}
+        run: conan create all --version=b6565 -cc core.version_ranges:resolve_prereleases=True --build=missing -pr clang-cl-arm64
 
       # Skip the following for 13.4-preview
       - name: conan create cudnn
