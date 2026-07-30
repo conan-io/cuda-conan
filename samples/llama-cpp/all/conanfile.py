@@ -91,6 +91,7 @@ class LlamaCppConan(ConanFile):
         # Follow with_examples when newer versions can compile examples,
         # right now it tries to add_subdirectory to a non-existent folder
         tc.variables["GGML_BUILD_EXAMPLES"] = False
+        tc.cache_variables["GGML_OPENMP"] = "OFF"
         tc.variables["GGML_CUDA"] = self.options.get_safe("with_cuda")
         if self.settings.compiler in ("msvc", "clang") and self.options.get_safe("with_cuda"):
             tc.cache_variables['CMAKE_CUDA_FLAGS'] = '-Xcompiler /Zc:preprocessor '
