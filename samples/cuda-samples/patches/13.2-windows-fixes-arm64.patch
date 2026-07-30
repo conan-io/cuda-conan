@@ -1,0 +1,3190 @@
+- Convenience: let user define `CMAKE_CUDA_ARCHITECTURES` via Conan configuration
+                rather build many (faster builds)
+- Handle glew and freeglut via Conan:
+                - add find_package(GLEW)
+                - use GLEW targets
+                - do not copy DLLs
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bf04075..1da7d6a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_CUDA_STANDARD 17)
+ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -27,6 +27,8 @@ if(MSVC)
+     add_compile_options($<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/Zc:preprocessor>)
+ endif()
+ 
++find_package(GLEW REQUIRED)
++
+ # Include installation configuration before processing samples
+ include(cmake/InstallSamples.cmake)
+ 
+diff --git a/cpp/0_Introduction/UnifiedMemoryStreams/CMakeLists.txt b/cpp/0_Introduction/UnifiedMemoryStreams/CMakeLists.txt
+index 2fd880d..f697ec3 100644
+--- a/cpp/0_Introduction/UnifiedMemoryStreams/CMakeLists.txt
++++ b/cpp/0_Introduction/UnifiedMemoryStreams/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/asyncAPI/CMakeLists.txt b/cpp/0_Introduction/asyncAPI/CMakeLists.txt
+index ec50945..e8afe77 100644
+--- a/cpp/0_Introduction/asyncAPI/CMakeLists.txt
++++ b/cpp/0_Introduction/asyncAPI/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/clock/CMakeLists.txt b/cpp/0_Introduction/clock/CMakeLists.txt
+index b9d7178..c7fb50c 100644
+--- a/cpp/0_Introduction/clock/CMakeLists.txt
++++ b/cpp/0_Introduction/clock/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/clock_nvrtc/CMakeLists.txt b/cpp/0_Introduction/clock_nvrtc/CMakeLists.txt
+index 9d5abe4..60828c5 100644
+--- a/cpp/0_Introduction/clock_nvrtc/CMakeLists.txt
++++ b/cpp/0_Introduction/clock_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/cudaOpenMP/CMakeLists.txt b/cpp/0_Introduction/cudaOpenMP/CMakeLists.txt
+index 991936c..8fa603e 100644
+--- a/cpp/0_Introduction/cudaOpenMP/CMakeLists.txt
++++ b/cpp/0_Introduction/cudaOpenMP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/fp16ScalarProduct/CMakeLists.txt b/cpp/0_Introduction/fp16ScalarProduct/CMakeLists.txt
+index 3f2a3d3..8810588 100644
+--- a/cpp/0_Introduction/fp16ScalarProduct/CMakeLists.txt
++++ b/cpp/0_Introduction/fp16ScalarProduct/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+ else()
+diff --git a/cpp/0_Introduction/matrixMul/CMakeLists.txt b/cpp/0_Introduction/matrixMul/CMakeLists.txt
+index 9293df3..5df50f9 100644
+--- a/cpp/0_Introduction/matrixMul/CMakeLists.txt
++++ b/cpp/0_Introduction/matrixMul/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/matrixMulDrv/CMakeLists.txt b/cpp/0_Introduction/matrixMulDrv/CMakeLists.txt
+index 735cbe6..47db5c4 100644
+--- a/cpp/0_Introduction/matrixMulDrv/CMakeLists.txt
++++ b/cpp/0_Introduction/matrixMulDrv/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -43,7 +43,8 @@ set(CUDA_KERNEL_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/matrixMul_kernel.cu")
+ # Construct GENCODE_FLAGS explicitly from CUDA architectures
+ set(GENCODE_FLAGS "")
+ foreach(arch ${CMAKE_CUDA_ARCHITECTURES})
+-    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch},code=sm_${arch}")
++    string(REGEX REPLACE "[-].*$" "" arch_num "${arch}")
++    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch_num},code=sm_${arch_num}")
+ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+diff --git a/cpp/0_Introduction/matrixMulDynlinkJIT/CMakeLists.txt b/cpp/0_Introduction/matrixMulDynlinkJIT/CMakeLists.txt
+index 6cd324c..4ebe4f1 100644
+--- a/cpp/0_Introduction/matrixMulDynlinkJIT/CMakeLists.txt
++++ b/cpp/0_Introduction/matrixMulDynlinkJIT/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/matrixMul_nvrtc/CMakeLists.txt b/cpp/0_Introduction/matrixMul_nvrtc/CMakeLists.txt
+index adaa1d4..34b100e 100644
+--- a/cpp/0_Introduction/matrixMul_nvrtc/CMakeLists.txt
++++ b/cpp/0_Introduction/matrixMul_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/mergeSort/CMakeLists.txt b/cpp/0_Introduction/mergeSort/CMakeLists.txt
+index cc8747c..b8ba627 100644
+--- a/cpp/0_Introduction/mergeSort/CMakeLists.txt
++++ b/cpp/0_Introduction/mergeSort/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleAWBarrier/CMakeLists.txt b/cpp/0_Introduction/simpleAWBarrier/CMakeLists.txt
+index 7bcb836..e619b90 100644
+--- a/cpp/0_Introduction/simpleAWBarrier/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleAWBarrier/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/0_Introduction/simpleAssert/CMakeLists.txt b/cpp/0_Introduction/simpleAssert/CMakeLists.txt
+index ab0406c..d3d4aee 100644
+--- a/cpp/0_Introduction/simpleAssert/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleAssert/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleAssert_nvrtc/CMakeLists.txt b/cpp/0_Introduction/simpleAssert_nvrtc/CMakeLists.txt
+index d473058..399691c 100644
+--- a/cpp/0_Introduction/simpleAssert_nvrtc/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleAssert_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleAtomicIntrinsics_nvrtc/CMakeLists.txt b/cpp/0_Introduction/simpleAtomicIntrinsics_nvrtc/CMakeLists.txt
+index 9c659d6..29e5bc1 100644
+--- a/cpp/0_Introduction/simpleAtomicIntrinsics_nvrtc/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleAtomicIntrinsics_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleAttributes/CMakeLists.txt b/cpp/0_Introduction/simpleAttributes/CMakeLists.txt
+index d481f57..8b6bec0 100644
+--- a/cpp/0_Introduction/simpleAttributes/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleAttributes/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleCUDA2GL/CMakeLists.txt b/cpp/0_Introduction/simpleCUDA2GL/CMakeLists.txt
+index 661eba0..e0892e3 100644
+--- a/cpp/0_Introduction/simpleCUDA2GL/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleCUDA2GL/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -57,9 +57,9 @@ if(${OpenGL_FOUND})
+ 
+             target_link_libraries(simpleCUDA2GL
+                 ${OPENGL_LIBRARIES}
+-                ${GLUT_LIBRARIES}
++                GLUT::GLUT GLEW::GLEW
+             )
+-            if(WIN32)
++            if(0)
+                 target_link_libraries(simpleCUDA2GL
+                     ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                     ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+diff --git a/cpp/0_Introduction/simpleCallback/CMakeLists.txt b/cpp/0_Introduction/simpleCallback/CMakeLists.txt
+index 8c19b28..915a8e0 100644
+--- a/cpp/0_Introduction/simpleCallback/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleCallback/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleCooperativeGroups/CMakeLists.txt b/cpp/0_Introduction/simpleCooperativeGroups/CMakeLists.txt
+index cd0659f..3746073 100644
+--- a/cpp/0_Introduction/simpleCooperativeGroups/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleCooperativeGroups/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleCubemapTexture/CMakeLists.txt b/cpp/0_Introduction/simpleCubemapTexture/CMakeLists.txt
+index 2ec278b..cfde148 100644
+--- a/cpp/0_Introduction/simpleCubemapTexture/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleCubemapTexture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleDrvRuntime/CMakeLists.txt b/cpp/0_Introduction/simpleDrvRuntime/CMakeLists.txt
+index a05e5b6..3c879ea 100644
+--- a/cpp/0_Introduction/simpleDrvRuntime/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleDrvRuntime/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -45,7 +45,8 @@ set(CUDA_KERNEL_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/vectorAdd_kernel.cu")
+ # Construct GENCODE_FLAGS explicitly from CUDA architectures
+ set(GENCODE_FLAGS "")
+ foreach(arch ${CMAKE_CUDA_ARCHITECTURES})
+-    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch},code=sm_${arch}")
++    string(REGEX REPLACE "[-].*$" "" arch_num "${arch}")
++    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch_num},code=sm_${arch_num}")
+ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+diff --git a/cpp/0_Introduction/simpleHyperQ/CMakeLists.txt b/cpp/0_Introduction/simpleHyperQ/CMakeLists.txt
+index 160d058..e8442da 100644
+--- a/cpp/0_Introduction/simpleHyperQ/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleHyperQ/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleIPC/CMakeLists.txt b/cpp/0_Introduction/simpleIPC/CMakeLists.txt
+index 2e88a7e..ab5bbcf 100644
+--- a/cpp/0_Introduction/simpleIPC/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleIPC/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleLayeredTexture/CMakeLists.txt b/cpp/0_Introduction/simpleLayeredTexture/CMakeLists.txt
+index 86ad281..694bb54 100644
+--- a/cpp/0_Introduction/simpleLayeredTexture/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleLayeredTexture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleMPI/CMakeLists.txt b/cpp/0_Introduction/simpleMPI/CMakeLists.txt
+index 77b78c1..95f0b52 100644
+--- a/cpp/0_Introduction/simpleMPI/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleMPI/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleMultiCopy/CMakeLists.txt b/cpp/0_Introduction/simpleMultiCopy/CMakeLists.txt
+index 1e2d809..a49ee77 100644
+--- a/cpp/0_Introduction/simpleMultiCopy/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleMultiCopy/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleMultiGPU/CMakeLists.txt b/cpp/0_Introduction/simpleMultiGPU/CMakeLists.txt
+index e88e0c2..144287e 100644
+--- a/cpp/0_Introduction/simpleMultiGPU/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleMultiGPU/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleOccupancy/CMakeLists.txt b/cpp/0_Introduction/simpleOccupancy/CMakeLists.txt
+index fbd4ec7..0cfb707 100644
+--- a/cpp/0_Introduction/simpleOccupancy/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleOccupancy/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleP2P/CMakeLists.txt b/cpp/0_Introduction/simpleP2P/CMakeLists.txt
+index ddfe6c1..529c987 100644
+--- a/cpp/0_Introduction/simpleP2P/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleP2P/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simplePitchLinearTexture/CMakeLists.txt b/cpp/0_Introduction/simplePitchLinearTexture/CMakeLists.txt
+index 7a72745..3c41266 100644
+--- a/cpp/0_Introduction/simplePitchLinearTexture/CMakeLists.txt
++++ b/cpp/0_Introduction/simplePitchLinearTexture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simplePrintf/CMakeLists.txt b/cpp/0_Introduction/simplePrintf/CMakeLists.txt
+index 8f9ca7d..a99c0c5 100644
+--- a/cpp/0_Introduction/simplePrintf/CMakeLists.txt
++++ b/cpp/0_Introduction/simplePrintf/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleStreams/CMakeLists.txt b/cpp/0_Introduction/simpleStreams/CMakeLists.txt
+index 8e4be29..71b926d 100644
+--- a/cpp/0_Introduction/simpleStreams/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleStreams/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleSurfaceWrite/CMakeLists.txt b/cpp/0_Introduction/simpleSurfaceWrite/CMakeLists.txt
+index f7c5d5f..7a42114 100644
+--- a/cpp/0_Introduction/simpleSurfaceWrite/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleSurfaceWrite/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleTemplates/CMakeLists.txt b/cpp/0_Introduction/simpleTemplates/CMakeLists.txt
+index e4ae61e..238504e 100644
+--- a/cpp/0_Introduction/simpleTemplates/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleTemplates/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleTexture/CMakeLists.txt b/cpp/0_Introduction/simpleTexture/CMakeLists.txt
+index d6a37b6..10df990 100644
+--- a/cpp/0_Introduction/simpleTexture/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleTexture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleTexture3D/CMakeLists.txt b/cpp/0_Introduction/simpleTexture3D/CMakeLists.txt
+index f6baaf2..d570d86 100644
+--- a/cpp/0_Introduction/simpleTexture3D/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleTexture3D/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(simpleTexture3D
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to output directory
+@@ -63,7 +63,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}
+         )
+ 
+-         if(WIN32)
++         if(0)
+             target_link_libraries(simpleTexture3D
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET simpleTexture3D
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET simpleTexture3D
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/0_Introduction/simpleTextureDrv/CMakeLists.txt b/cpp/0_Introduction/simpleTextureDrv/CMakeLists.txt
+index e9e36b0..9f87c47 100644
+--- a/cpp/0_Introduction/simpleTextureDrv/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleTextureDrv/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -42,7 +42,8 @@ set(CUDA_KERNEL_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/simpleTexture_kernel.cu")
+ # Construct GENCODE_FLAGS explicitly from CUDA architectures
+ set(GENCODE_FLAGS "")
+ foreach(arch ${CMAKE_CUDA_ARCHITECTURES})
+-    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch},code=sm_${arch}")
++    string(REGEX REPLACE "[-].*$" "" arch_num "${arch}")
++    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch_num},code=sm_${arch_num}")
+ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+diff --git a/cpp/0_Introduction/simpleVoteIntrinsics/CMakeLists.txt b/cpp/0_Introduction/simpleVoteIntrinsics/CMakeLists.txt
+index 11fa110..f39c84f 100644
+--- a/cpp/0_Introduction/simpleVoteIntrinsics/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleVoteIntrinsics/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/simpleZeroCopy/CMakeLists.txt b/cpp/0_Introduction/simpleZeroCopy/CMakeLists.txt
+index 536271d..d8f9c52 100644
+--- a/cpp/0_Introduction/simpleZeroCopy/CMakeLists.txt
++++ b/cpp/0_Introduction/simpleZeroCopy/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/systemWideAtomics/CMakeLists.txt b/cpp/0_Introduction/systemWideAtomics/CMakeLists.txt
+index 7e37ff9..1b8cd1d 100644
+--- a/cpp/0_Introduction/systemWideAtomics/CMakeLists.txt
++++ b/cpp/0_Introduction/systemWideAtomics/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+ else()
+diff --git a/cpp/0_Introduction/template/CMakeLists.txt b/cpp/0_Introduction/template/CMakeLists.txt
+index 42e614e..a6c3089 100644
+--- a/cpp/0_Introduction/template/CMakeLists.txt
++++ b/cpp/0_Introduction/template/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/vectorAdd/CMakeLists.txt b/cpp/0_Introduction/vectorAdd/CMakeLists.txt
+index b3f0322..3343c6d 100644
+--- a/cpp/0_Introduction/vectorAdd/CMakeLists.txt
++++ b/cpp/0_Introduction/vectorAdd/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")  # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/0_Introduction/vectorAddDrv/CMakeLists.txt b/cpp/0_Introduction/vectorAddDrv/CMakeLists.txt
+index a08c02c..525849c 100644
+--- a/cpp/0_Introduction/vectorAddDrv/CMakeLists.txt
++++ b/cpp/0_Introduction/vectorAddDrv/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -42,7 +42,8 @@ set(CUDA_KERNEL_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/vectorAdd_kernel.cu")
+ # Construct GENCODE_FLAGS explicitly from CUDA architectures
+ set(GENCODE_FLAGS "")
+ foreach(arch ${CMAKE_CUDA_ARCHITECTURES})
+-    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch},code=sm_${arch}")
++    string(REGEX REPLACE "[-].*$" "" arch_num "${arch}")
++    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch_num},code=sm_${arch_num}")
+ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+diff --git a/cpp/0_Introduction/vectorAddMMAP/CMakeLists.txt b/cpp/0_Introduction/vectorAddMMAP/CMakeLists.txt
+index 8989d1c..85e3364 100644
+--- a/cpp/0_Introduction/vectorAddMMAP/CMakeLists.txt
++++ b/cpp/0_Introduction/vectorAddMMAP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -45,7 +45,8 @@ else()
+     # Construct GENCODE_FLAGS explicitly from CUDA architectures
+     set(GENCODE_FLAGS "")
+     foreach(arch ${CMAKE_CUDA_ARCHITECTURES})
+-        list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch},code=sm_${arch}")
++        string(REGEX REPLACE "[-].*$" "" arch_num "${arch}")
++        list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch_num},code=sm_${arch_num}")
+     endforeach()
+ 
+     add_custom_command(
+diff --git a/cpp/0_Introduction/vectorAdd_nvrtc/CMakeLists.txt b/cpp/0_Introduction/vectorAdd_nvrtc/CMakeLists.txt
+index 75350c9..af2266a 100644
+--- a/cpp/0_Introduction/vectorAdd_nvrtc/CMakeLists.txt
++++ b/cpp/0_Introduction/vectorAdd_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/1_Utilities/deviceQuery/CMakeLists.txt b/cpp/1_Utilities/deviceQuery/CMakeLists.txt
+index 110d95c..edbe901 100644
+--- a/cpp/1_Utilities/deviceQuery/CMakeLists.txt
++++ b/cpp/1_Utilities/deviceQuery/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/1_Utilities/deviceQueryDrv/CMakeLists.txt b/cpp/1_Utilities/deviceQueryDrv/CMakeLists.txt
+index ecb5722..6596de9 100644
+--- a/cpp/1_Utilities/deviceQueryDrv/CMakeLists.txt
++++ b/cpp/1_Utilities/deviceQueryDrv/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/1_Utilities/topologyQuery/CMakeLists.txt b/cpp/1_Utilities/topologyQuery/CMakeLists.txt
+index 7d83b77..7fff42a 100644
+--- a/cpp/1_Utilities/topologyQuery/CMakeLists.txt
++++ b/cpp/1_Utilities/topologyQuery/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_CrossGPU/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_CrossGPU/CMakeLists.txt
+index 4db8933..87af69f 100644
+--- a/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_CrossGPU/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_CrossGPU/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_Interop/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_Interop/CMakeLists.txt
+index b02abc0..96290da 100644
+--- a/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_Interop/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/EGLStream_CUDA_Interop/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/FunctionPointers/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/FunctionPointers/CMakeLists.txt
+index be26e2d..071427a 100644
+--- a/cpp/2_Concepts_and_Techniques/FunctionPointers/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/FunctionPointers/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(FunctionPointers
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to output directory
+@@ -63,7 +63,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(FunctionPointers
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET FunctionPointers
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET FunctionPointers
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineP/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineP/CMakeLists.txt
+index 191b97b..af22389 100644
+--- a/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineP/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineQ/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineQ/CMakeLists.txt
+index da2e1ca..e27e7dc 100644
+--- a/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineQ/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/MC_EstimatePiInlineQ/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/MC_EstimatePiP/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/MC_EstimatePiP/CMakeLists.txt
+index 66ff597..d0d5303 100644
+--- a/cpp/2_Concepts_and_Techniques/MC_EstimatePiP/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/MC_EstimatePiP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/MC_EstimatePiQ/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/MC_EstimatePiQ/CMakeLists.txt
+index bc06b8d..9687886 100644
+--- a/cpp/2_Concepts_and_Techniques/MC_EstimatePiQ/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/MC_EstimatePiQ/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/MC_SingleAsianOptionP/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/MC_SingleAsianOptionP/CMakeLists.txt
+index e1d497a..91e8128 100644
+--- a/cpp/2_Concepts_and_Techniques/MC_SingleAsianOptionP/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/MC_SingleAsianOptionP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/boxFilter/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/boxFilter/CMakeLists.txt
+index 8273fa7..14153b2 100644
+--- a/cpp/2_Concepts_and_Techniques/boxFilter/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/boxFilter/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(boxFilter
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to output directory
+@@ -63,7 +63,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(boxFilter
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET boxFilter
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET boxFilter
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/2_Concepts_and_Techniques/convolutionSeparable/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/convolutionSeparable/CMakeLists.txt
+index 5fe32b5..9ffc8be 100644
+--- a/cpp/2_Concepts_and_Techniques/convolutionSeparable/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/convolutionSeparable/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/convolutionTexture/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/convolutionTexture/CMakeLists.txt
+index a958928..6a3ddee 100644
+--- a/cpp/2_Concepts_and_Techniques/convolutionTexture/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/convolutionTexture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/dct8x8/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/dct8x8/CMakeLists.txt
+index 4bd9375..d936d84 100644
+--- a/cpp/2_Concepts_and_Techniques/dct8x8/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/dct8x8/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/eigenvalues/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/eigenvalues/CMakeLists.txt
+index af6f035..8479302 100644
+--- a/cpp/2_Concepts_and_Techniques/eigenvalues/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/eigenvalues/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/histogram/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/histogram/CMakeLists.txt
+index e646362..6fe86bd 100644
+--- a/cpp/2_Concepts_and_Techniques/histogram/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/histogram/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/imageDenoising/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/imageDenoising/CMakeLists.txt
+index aeab370..a23074f 100644
+--- a/cpp/2_Concepts_and_Techniques/imageDenoising/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/imageDenoising/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -54,7 +54,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(imageDenoising
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to the output directory
+@@ -64,7 +64,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(imageDenoising
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -72,14 +72,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET imageDenoising
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET imageDenoising
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/2_Concepts_and_Techniques/inlinePTX/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/inlinePTX/CMakeLists.txt
+index 5ae4144..17a39f7 100644
+--- a/cpp/2_Concepts_and_Techniques/inlinePTX/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/inlinePTX/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/inlinePTX_nvrtc/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/inlinePTX_nvrtc/CMakeLists.txt
+index 0a429aa..eb996d2 100644
+--- a/cpp/2_Concepts_and_Techniques/inlinePTX_nvrtc/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/inlinePTX_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/interval/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/interval/CMakeLists.txt
+index d0d7e09..86b1204 100644
+--- a/cpp/2_Concepts_and_Techniques/interval/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/interval/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/particles/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/particles/CMakeLists.txt
+index f81cb30..716db3b 100644
+--- a/cpp/2_Concepts_and_Techniques/particles/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/particles/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ target_compile_features(particles PRIVATE cxx_std_17 cuda_std_17)
+ 
+         target_link_libraries(particles
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy clock_kernel.cu to the output directory
+@@ -63,7 +63,7 @@ target_compile_features(particles PRIVATE cxx_std_17 cuda_std_17)
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(particles
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ target_compile_features(particles PRIVATE cxx_std_17 cuda_std_17)
+ 
+             add_custom_command(TARGET particles
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET particles
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/2_Concepts_and_Techniques/radixSortThrust/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/radixSortThrust/CMakeLists.txt
+index 291522c..38ab4b4 100644
+--- a/cpp/2_Concepts_and_Techniques/radixSortThrust/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/radixSortThrust/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/reduction/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/reduction/CMakeLists.txt
+index 4f2c1fa..69c800c 100644
+--- a/cpp/2_Concepts_and_Techniques/reduction/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/reduction/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/reductionMultiBlockCG/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/reductionMultiBlockCG/CMakeLists.txt
+index 8be01c8..c998423 100644
+--- a/cpp/2_Concepts_and_Techniques/reductionMultiBlockCG/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/reductionMultiBlockCG/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/scalarProd/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/scalarProd/CMakeLists.txt
+index 9defe3d..74e1109 100644
+--- a/cpp/2_Concepts_and_Techniques/scalarProd/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/scalarProd/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/scan/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/scan/CMakeLists.txt
+index a2de5f2..171d73f 100644
+--- a/cpp/2_Concepts_and_Techniques/scan/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/scan/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/segmentationTreeThrust/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/segmentationTreeThrust/CMakeLists.txt
+index 35279fe..dab1c2c 100644
+--- a/cpp/2_Concepts_and_Techniques/segmentationTreeThrust/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/segmentationTreeThrust/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/shfl_scan/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/shfl_scan/CMakeLists.txt
+index 7292f91..88373cd 100644
+--- a/cpp/2_Concepts_and_Techniques/shfl_scan/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/shfl_scan/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/sortingNetworks/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/sortingNetworks/CMakeLists.txt
+index fbefb05..d7a5640 100644
+--- a/cpp/2_Concepts_and_Techniques/sortingNetworks/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/sortingNetworks/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/streamOrderedAllocation/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/streamOrderedAllocation/CMakeLists.txt
+index d57efb1..d0af0df 100644
+--- a/cpp/2_Concepts_and_Techniques/streamOrderedAllocation/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/streamOrderedAllocation/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/streamOrderedAllocationIPC/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/streamOrderedAllocationIPC/CMakeLists.txt
+index 7cd4788..80c2709 100644
+--- a/cpp/2_Concepts_and_Techniques/streamOrderedAllocationIPC/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/streamOrderedAllocationIPC/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/streamOrderedAllocationP2P/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/streamOrderedAllocationP2P/CMakeLists.txt
+index 6aec4f5..68d2389 100644
+--- a/cpp/2_Concepts_and_Techniques/streamOrderedAllocationP2P/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/streamOrderedAllocationP2P/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/threadFenceReduction/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/threadFenceReduction/CMakeLists.txt
+index 8d25b6b..e1bbe79 100644
+--- a/cpp/2_Concepts_and_Techniques/threadFenceReduction/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/threadFenceReduction/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/2_Concepts_and_Techniques/threadMigration/CMakeLists.txt b/cpp/2_Concepts_and_Techniques/threadMigration/CMakeLists.txt
+index 81b626f..198b8c1 100644
+--- a/cpp/2_Concepts_and_Techniques/threadMigration/CMakeLists.txt
++++ b/cpp/2_Concepts_and_Techniques/threadMigration/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -47,7 +47,8 @@ set(CUDA_KERNEL_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/threadMigration_kernel.cu")
+ # Construct GENCODE_FLAGS explicitly from CUDA architectures
+ set(GENCODE_FLAGS "")
+ foreach(arch ${CMAKE_CUDA_ARCHITECTURES})
+-    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch},code=sm_${arch}")
++    string(REGEX REPLACE "[-].*$" "" arch_num "${arch}")
++    list(APPEND GENCODE_FLAGS "-gencode=arch=compute_${arch_num},code=sm_${arch_num}")
+ endforeach()
+ 
+ if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
+diff --git a/cpp/3_CUDA_Features/StreamPriorities/CMakeLists.txt b/cpp/3_CUDA_Features/StreamPriorities/CMakeLists.txt
+index d2b347b..49a950a 100644
+--- a/cpp/3_CUDA_Features/StreamPriorities/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/StreamPriorities/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/bf16TensorCoreGemm/CMakeLists.txt b/cpp/3_CUDA_Features/bf16TensorCoreGemm/CMakeLists.txt
+index 4bec115..e2becb4 100644
+--- a/cpp/3_CUDA_Features/bf16TensorCoreGemm/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/bf16TensorCoreGemm/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+ else()
+diff --git a/cpp/3_CUDA_Features/binaryPartitionCG/CMakeLists.txt b/cpp/3_CUDA_Features/binaryPartitionCG/CMakeLists.txt
+index 25c46b4..324cbc7 100644
+--- a/cpp/3_CUDA_Features/binaryPartitionCG/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/binaryPartitionCG/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/bindlessTexture/CMakeLists.txt b/cpp/3_CUDA_Features/bindlessTexture/CMakeLists.txt
+index ee74250..064f4f0 100644
+--- a/cpp/3_CUDA_Features/bindlessTexture/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/bindlessTexture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ target_compile_features(bindlessTexture PRIVATE cxx_std_17 cuda_std_17)
+ 
+         target_link_libraries(bindlessTexture
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy clock_kernel.cu to the output directory
+@@ -63,7 +63,7 @@ target_compile_features(bindlessTexture PRIVATE cxx_std_17 cuda_std_17)
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(bindlessTexture
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ target_compile_features(bindlessTexture PRIVATE cxx_std_17 cuda_std_17)
+ 
+             add_custom_command(TARGET bindlessTexture
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET bindlessTexture
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/3_CUDA_Features/cdpAdvancedQuicksort/CMakeLists.txt b/cpp/3_CUDA_Features/cdpAdvancedQuicksort/CMakeLists.txt
+index 54de78a..228e23b 100644
+--- a/cpp/3_CUDA_Features/cdpAdvancedQuicksort/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/cdpAdvancedQuicksort/CMakeLists.txt
+@@ -14,7 +14,7 @@ string(FIND "${CUDAToolkit_INCLUDE_DIRS}" "aarch64-qnx" _aarch64_qnx_ctk)
+ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND (NOT _aarch64_linux_ctk EQUAL -1 OR NOT _aarch64_qnx_ctk EQUAL -1))
+     set(CMAKE_CUDA_ARCHITECTURES 87 110)
+ else()
+-    set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
++    #set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
+ endif()
+ 
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+diff --git a/cpp/3_CUDA_Features/cdpBezierTessellation/CMakeLists.txt b/cpp/3_CUDA_Features/cdpBezierTessellation/CMakeLists.txt
+index 3eba90f..c59b2db 100644
+--- a/cpp/3_CUDA_Features/cdpBezierTessellation/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/cdpBezierTessellation/CMakeLists.txt
+@@ -14,7 +14,7 @@ string(FIND "${CUDAToolkit_INCLUDE_DIRS}" "aarch64-qnx" _aarch64_qnx_ctk)
+ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND (NOT _aarch64_linux_ctk EQUAL -1 OR NOT _aarch64_qnx_ctk EQUAL -1))
+     set(CMAKE_CUDA_ARCHITECTURES 87 110)
+ else()
+-    set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
++    #set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
+ endif()
+ 
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+diff --git a/cpp/3_CUDA_Features/cdpQuadtree/CMakeLists.txt b/cpp/3_CUDA_Features/cdpQuadtree/CMakeLists.txt
+index 1ecbfac..1a7b544 100644
+--- a/cpp/3_CUDA_Features/cdpQuadtree/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/cdpQuadtree/CMakeLists.txt
+@@ -14,7 +14,7 @@ string(FIND "${CUDAToolkit_INCLUDE_DIRS}" "aarch64-qnx" _aarch64_qnx_ctk)
+ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND (NOT _aarch64_linux_ctk EQUAL -1 OR NOT _aarch64_qnx_ctk EQUAL -1))
+     set(CMAKE_CUDA_ARCHITECTURES 87 110)
+ else()
+-    set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
++    #set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
+ endif()
+ 
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+diff --git a/cpp/3_CUDA_Features/cdpSimplePrint/CMakeLists.txt b/cpp/3_CUDA_Features/cdpSimplePrint/CMakeLists.txt
+index 00c4218..8586bb6 100644
+--- a/cpp/3_CUDA_Features/cdpSimplePrint/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/cdpSimplePrint/CMakeLists.txt
+@@ -14,7 +14,7 @@ string(FIND "${CUDAToolkit_INCLUDE_DIRS}" "aarch64-qnx" _aarch64_qnx_ctk)
+ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND (NOT _aarch64_linux_ctk EQUAL -1 OR NOT _aarch64_qnx_ctk EQUAL -1))
+     set(CMAKE_CUDA_ARCHITECTURES 87 110)
+ else()
+-    set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
++    #set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
+ endif()
+ 
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+diff --git a/cpp/3_CUDA_Features/cdpSimpleQuicksort/CMakeLists.txt b/cpp/3_CUDA_Features/cdpSimpleQuicksort/CMakeLists.txt
+index 07ab4d6..8721f68 100644
+--- a/cpp/3_CUDA_Features/cdpSimpleQuicksort/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/cdpSimpleQuicksort/CMakeLists.txt
+@@ -14,7 +14,7 @@ string(FIND "${CUDAToolkit_INCLUDE_DIRS}" "aarch64-qnx" _aarch64_qnx_ctk)
+ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" AND (NOT _aarch64_linux_ctk EQUAL -1 OR NOT _aarch64_qnx_ctk EQUAL -1))
+     set(CMAKE_CUDA_ARCHITECTURES 87 110)
+ else()
+-    set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
++    #set(CMAKE_CUDA_ARCHITECTURES 75 80 86 89 90 100 110 120)
+ endif()
+ 
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+diff --git a/cpp/3_CUDA_Features/cudaCompressibleMemory/CMakeLists.txt b/cpp/3_CUDA_Features/cudaCompressibleMemory/CMakeLists.txt
+index 20416c6..20744a6 100644
+--- a/cpp/3_CUDA_Features/cudaCompressibleMemory/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/cudaCompressibleMemory/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/cudaTensorCoreGemm/CMakeLists.txt b/cpp/3_CUDA_Features/cudaTensorCoreGemm/CMakeLists.txt
+index fc5c089..c8429eb 100644
+--- a/cpp/3_CUDA_Features/cudaTensorCoreGemm/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/cudaTensorCoreGemm/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/3_CUDA_Features/dmmaTensorCoreGemm/CMakeLists.txt b/cpp/3_CUDA_Features/dmmaTensorCoreGemm/CMakeLists.txt
+index d3aa179..873997e 100644
+--- a/cpp/3_CUDA_Features/dmmaTensorCoreGemm/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/dmmaTensorCoreGemm/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/3_CUDA_Features/globalToShmemAsyncCopy/CMakeLists.txt b/cpp/3_CUDA_Features/globalToShmemAsyncCopy/CMakeLists.txt
+index 47abd5e..c261430 100644
+--- a/cpp/3_CUDA_Features/globalToShmemAsyncCopy/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/globalToShmemAsyncCopy/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/3_CUDA_Features/graphConditionalNodes/CMakeLists.txt b/cpp/3_CUDA_Features/graphConditionalNodes/CMakeLists.txt
+index 5e7cd32..2c01fb6 100644
+--- a/cpp/3_CUDA_Features/graphConditionalNodes/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/graphConditionalNodes/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/graphMemoryFootprint/CMakeLists.txt b/cpp/3_CUDA_Features/graphMemoryFootprint/CMakeLists.txt
+index 29d206b..4b07c6c 100644
+--- a/cpp/3_CUDA_Features/graphMemoryFootprint/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/graphMemoryFootprint/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/graphMemoryNodes/CMakeLists.txt b/cpp/3_CUDA_Features/graphMemoryNodes/CMakeLists.txt
+index aeabc6b..eead019 100644
+--- a/cpp/3_CUDA_Features/graphMemoryNodes/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/graphMemoryNodes/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/immaTensorCoreGemm/CMakeLists.txt b/cpp/3_CUDA_Features/immaTensorCoreGemm/CMakeLists.txt
+index 7d71193..9e6bafb 100644
+--- a/cpp/3_CUDA_Features/immaTensorCoreGemm/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/immaTensorCoreGemm/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/3_CUDA_Features/jacobiCudaGraphs/CMakeLists.txt b/cpp/3_CUDA_Features/jacobiCudaGraphs/CMakeLists.txt
+index a39b81a..2ab1701 100644
+--- a/cpp/3_CUDA_Features/jacobiCudaGraphs/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/jacobiCudaGraphs/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/memMapIPCDrv/CMakeLists.txt b/cpp/3_CUDA_Features/memMapIPCDrv/CMakeLists.txt
+index 9856efb..e205c3b 100644
+--- a/cpp/3_CUDA_Features/memMapIPCDrv/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/memMapIPCDrv/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/newdelete/CMakeLists.txt b/cpp/3_CUDA_Features/newdelete/CMakeLists.txt
+index 4437a6d..2fd0c11 100644
+--- a/cpp/3_CUDA_Features/newdelete/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/newdelete/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/ptxjit/CMakeLists.txt b/cpp/3_CUDA_Features/ptxjit/CMakeLists.txt
+index 15ad74f..1e8d3c6 100644
+--- a/cpp/3_CUDA_Features/ptxjit/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/ptxjit/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/simpleCudaGraphs/CMakeLists.txt b/cpp/3_CUDA_Features/simpleCudaGraphs/CMakeLists.txt
+index b6a1837..090f1ec 100644
+--- a/cpp/3_CUDA_Features/simpleCudaGraphs/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/simpleCudaGraphs/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/3_CUDA_Features/tf32TensorCoreGemm/CMakeLists.txt b/cpp/3_CUDA_Features/tf32TensorCoreGemm/CMakeLists.txt
+index 6599a6f..fb0124b 100644
+--- a/cpp/3_CUDA_Features/tf32TensorCoreGemm/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/tf32TensorCoreGemm/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/3_CUDA_Features/warpAggregatedAtomicsCG/CMakeLists.txt b/cpp/3_CUDA_Features/warpAggregatedAtomicsCG/CMakeLists.txt
+index e3046b3..afe4746 100644
+--- a/cpp/3_CUDA_Features/warpAggregatedAtomicsCG/CMakeLists.txt
++++ b/cpp/3_CUDA_Features/warpAggregatedAtomicsCG/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt
+index 046c081..fea2c7a 100644
+--- a/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/FilterBorderControlNPP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -60,7 +60,7 @@ target_compile_features(FilterBorderControlNPP PRIVATE cxx_std_17 cuda_std_17)
+     if(0)
+         add_custom_command(TARGET FilterBorderControlNPP
+         POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy
++        COMMAND ${CMAKE_COMMAND} -E echo copy
+         ${FreeImage_LIBRARY}/../FreeImage.dll
+         ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+         )
+diff --git a/cpp/4_CUDA_Libraries/MersenneTwisterGP11213/CMakeLists.txt b/cpp/4_CUDA_Libraries/MersenneTwisterGP11213/CMakeLists.txt
+index e750063..f4a3c57 100644
+--- a/cpp/4_CUDA_Libraries/MersenneTwisterGP11213/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/MersenneTwisterGP11213/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/batchCUBLAS/CMakeLists.txt b/cpp/4_CUDA_Libraries/batchCUBLAS/CMakeLists.txt
+index 49b693e..fe68c69 100644
+--- a/cpp/4_CUDA_Libraries/batchCUBLAS/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/batchCUBLAS/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt
+index 0b0e10d..aa47f26 100644
+--- a/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/boxFilterNPP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -57,7 +57,7 @@ target_compile_features(boxFilterNPP PRIVATE cxx_std_17 cuda_std_17)
+     if(0)
+         add_custom_command(TARGET boxFilterNPP
+         POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy
++        COMMAND ${CMAKE_COMMAND} -E echo copy
+         ${FreeImage_LIBRARY}/../FreeImage.dll
+         ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+         )
+diff --git a/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt
+index 78fe243..394bd49 100644
+--- a/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cannyEdgeDetectorNPP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -57,7 +57,7 @@ target_compile_features(cannyEdgeDetectorNPP PRIVATE cxx_std_17 cuda_std_17)
+     if(0)
+         add_custom_command(TARGET cannyEdgeDetectorNPP
+         POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy
++        COMMAND ${CMAKE_COMMAND} -E echo copy
+         ${FreeImage_LIBRARY}/../FreeImage.dll
+         ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+         )
+diff --git a/cpp/4_CUDA_Libraries/conjugateGradient/CMakeLists.txt b/cpp/4_CUDA_Libraries/conjugateGradient/CMakeLists.txt
+index bc1a5c4..3a989a3 100644
+--- a/cpp/4_CUDA_Libraries/conjugateGradient/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/conjugateGradient/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/conjugateGradientCudaGraphs/CMakeLists.txt b/cpp/4_CUDA_Libraries/conjugateGradientCudaGraphs/CMakeLists.txt
+index 2636bf6..676217a 100644
+--- a/cpp/4_CUDA_Libraries/conjugateGradientCudaGraphs/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/conjugateGradientCudaGraphs/CMakeLists.txt
+@@ -13,7 +13,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/conjugateGradientMultiBlockCG/CMakeLists.txt b/cpp/4_CUDA_Libraries/conjugateGradientMultiBlockCG/CMakeLists.txt
+index df0b353..aeac8fb 100644
+--- a/cpp/4_CUDA_Libraries/conjugateGradientMultiBlockCG/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/conjugateGradientMultiBlockCG/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/4_CUDA_Libraries/conjugateGradientMultiDeviceCG/CMakeLists.txt b/cpp/4_CUDA_Libraries/conjugateGradientMultiDeviceCG/CMakeLists.txt
+index 613d4db..74ec332 100644
+--- a/cpp/4_CUDA_Libraries/conjugateGradientMultiDeviceCG/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/conjugateGradientMultiDeviceCG/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/4_CUDA_Libraries/conjugateGradientPrecond/CMakeLists.txt b/cpp/4_CUDA_Libraries/conjugateGradientPrecond/CMakeLists.txt
+index b20f5ae..db45776 100644
+--- a/cpp/4_CUDA_Libraries/conjugateGradientPrecond/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/conjugateGradientPrecond/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/conjugateGradientUM/CMakeLists.txt b/cpp/4_CUDA_Libraries/conjugateGradientUM/CMakeLists.txt
+index 4cbcc4d..467634d 100644
+--- a/cpp/4_CUDA_Libraries/conjugateGradientUM/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/conjugateGradientUM/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/cuSolverDn_LinearSolver/CMakeLists.txt b/cpp/4_CUDA_Libraries/cuSolverDn_LinearSolver/CMakeLists.txt
+index 4238fd5..65fad42 100644
+--- a/cpp/4_CUDA_Libraries/cuSolverDn_LinearSolver/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cuSolverDn_LinearSolver/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/cuSolverRf/CMakeLists.txt b/cpp/4_CUDA_Libraries/cuSolverRf/CMakeLists.txt
+index eed7f8b..77a2bc5 100644
+--- a/cpp/4_CUDA_Libraries/cuSolverRf/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cuSolverRf/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/cuSolverSp_LinearSolver/CMakeLists.txt b/cpp/4_CUDA_Libraries/cuSolverSp_LinearSolver/CMakeLists.txt
+index fab672f..901f9ac 100644
+--- a/cpp/4_CUDA_Libraries/cuSolverSp_LinearSolver/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cuSolverSp_LinearSolver/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelCholesky/CMakeLists.txt b/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelCholesky/CMakeLists.txt
+index 60f1b9c..bfcb886 100644
+--- a/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelCholesky/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelCholesky/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelQR/CMakeLists.txt b/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelQR/CMakeLists.txt
+index f37971f..f3f4170 100644
+--- a/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelQR/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cuSolverSp_LowlevelQR/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/cudaNvSci/CMakeLists.txt b/cpp/4_CUDA_Libraries/cudaNvSci/CMakeLists.txt
+index 005501c..3a88b76 100644
+--- a/cpp/4_CUDA_Libraries/cudaNvSci/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/cudaNvSci/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 90 110)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 90 110)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt
+index 42a2c58..e27e353 100644
+--- a/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/freeImageInteropNPP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -57,7 +57,7 @@ if(${FreeImage_FOUND})
+     if(0)
+         add_custom_command(TARGET freeImageInteropNPP
+         POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy
++        COMMAND ${CMAKE_COMMAND} -E echo copy
+         ${FreeImage_LIBRARY}/../FreeImage.dll
+         ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+         )
+diff --git a/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt
+index d2930c0..77a790f 100644
+--- a/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/histEqualizationNPP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -58,7 +58,7 @@ if(${FreeImage_FOUND})
+     if(0)
+         add_custom_command(TARGET histEqualizationNPP
+         POST_BUILD
+-        COMMAND ${CMAKE_COMMAND} -E copy
++        COMMAND ${CMAKE_COMMAND} -E echo copy
+         ${FreeImage_LIBRARY}/../FreeImage.dll
+         ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+         )
+diff --git a/cpp/4_CUDA_Libraries/jitLto/CMakeLists.txt b/cpp/4_CUDA_Libraries/jitLto/CMakeLists.txt
+index 9baef1d..dfe8d98 100644
+--- a/cpp/4_CUDA_Libraries/jitLto/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/jitLto/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/lineOfSight/CMakeLists.txt b/cpp/4_CUDA_Libraries/lineOfSight/CMakeLists.txt
+index a77c1b5..20162d2 100644
+--- a/cpp/4_CUDA_Libraries/lineOfSight/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/lineOfSight/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/matrixMulCUBLAS/CMakeLists.txt b/cpp/4_CUDA_Libraries/matrixMulCUBLAS/CMakeLists.txt
+index 260cf23..9e89961 100644
+--- a/cpp/4_CUDA_Libraries/matrixMulCUBLAS/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/matrixMulCUBLAS/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/nvJPEG/CMakeLists.txt b/cpp/4_CUDA_Libraries/nvJPEG/CMakeLists.txt
+index 215cc96..097e160 100644
+--- a/cpp/4_CUDA_Libraries/nvJPEG/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/nvJPEG/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/nvJPEG_encoder/CMakeLists.txt b/cpp/4_CUDA_Libraries/nvJPEG_encoder/CMakeLists.txt
+index 47ebb08..5c83093 100644
+--- a/cpp/4_CUDA_Libraries/nvJPEG_encoder/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/nvJPEG_encoder/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/oceanFFT/CMakeLists.txt b/cpp/4_CUDA_Libraries/oceanFFT/CMakeLists.txt
+index 99aa0e0..ad9d471 100644
+--- a/cpp/4_CUDA_Libraries/oceanFFT/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/oceanFFT/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -54,7 +54,7 @@ target_compile_features(oceanFFT PRIVATE cxx_std_17 cuda_std_17)
+ 
+         target_link_libraries(oceanFFT
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+             CUDA::cufft
+         )
+ 
+@@ -65,7 +65,7 @@ target_compile_features(oceanFFT PRIVATE cxx_std_17 cuda_std_17)
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(oceanFFT
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -73,14 +73,14 @@ target_compile_features(oceanFFT PRIVATE cxx_std_17 cuda_std_17)
+ 
+             add_custom_command(TARGET oceanFFT
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET oceanFFT
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/4_CUDA_Libraries/randomFog/CMakeLists.txt b/cpp/4_CUDA_Libraries/randomFog/CMakeLists.txt
+index 635a296..b3ca8b2 100644
+--- a/cpp/4_CUDA_Libraries/randomFog/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/randomFog/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -63,7 +63,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(randomFog
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+             CUDA::curand
+             CUDA::cudart
+         )
+@@ -84,7 +84,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(randomFog
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -92,14 +92,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET randomFog
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET randomFog
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/4_CUDA_Libraries/simpleCUBLAS/CMakeLists.txt b/cpp/4_CUDA_Libraries/simpleCUBLAS/CMakeLists.txt
+index cc7f714..a9eb0e0 100644
+--- a/cpp/4_CUDA_Libraries/simpleCUBLAS/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/simpleCUBLAS/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/simpleCUBLASXT/CMakeLists.txt b/cpp/4_CUDA_Libraries/simpleCUBLASXT/CMakeLists.txt
+index 72d3368..e84d57c 100644
+--- a/cpp/4_CUDA_Libraries/simpleCUBLASXT/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/simpleCUBLASXT/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/simpleCUBLAS_LU/CMakeLists.txt b/cpp/4_CUDA_Libraries/simpleCUBLAS_LU/CMakeLists.txt
+index 01f8c8a..0f6c1e7 100644
+--- a/cpp/4_CUDA_Libraries/simpleCUBLAS_LU/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/simpleCUBLAS_LU/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/simpleCUFFT/CMakeLists.txt b/cpp/4_CUDA_Libraries/simpleCUFFT/CMakeLists.txt
+index a3db2d0..4c94961 100644
+--- a/cpp/4_CUDA_Libraries/simpleCUFFT/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/simpleCUFFT/CMakeLists.txt
+@@ -13,7 +13,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/simpleCUFFT_2d_MGPU/CMakeLists.txt b/cpp/4_CUDA_Libraries/simpleCUFFT_2d_MGPU/CMakeLists.txt
+index 28d435f..5edc106 100644
+--- a/cpp/4_CUDA_Libraries/simpleCUFFT_2d_MGPU/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/simpleCUFFT_2d_MGPU/CMakeLists.txt
+@@ -13,7 +13,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/simpleCUFFT_MGPU/CMakeLists.txt b/cpp/4_CUDA_Libraries/simpleCUFFT_MGPU/CMakeLists.txt
+index 4f0f1aa..fb646de 100644
+--- a/cpp/4_CUDA_Libraries/simpleCUFFT_MGPU/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/simpleCUFFT_MGPU/CMakeLists.txt
+@@ -13,7 +13,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/simpleCUFFT_callback/CMakeLists.txt b/cpp/4_CUDA_Libraries/simpleCUFFT_callback/CMakeLists.txt
+index 341796e..91615e8 100644
+--- a/cpp/4_CUDA_Libraries/simpleCUFFT_callback/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/simpleCUFFT_callback/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/4_CUDA_Libraries/watershedSegmentationNPP/CMakeLists.txt b/cpp/4_CUDA_Libraries/watershedSegmentationNPP/CMakeLists.txt
+index 744a492..275537e 100644
+--- a/cpp/4_CUDA_Libraries/watershedSegmentationNPP/CMakeLists.txt
++++ b/cpp/4_CUDA_Libraries/watershedSegmentationNPP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/BlackScholes/CMakeLists.txt b/cpp/5_Domain_Specific/BlackScholes/CMakeLists.txt
+index 01329a8..131f790 100644
+--- a/cpp/5_Domain_Specific/BlackScholes/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/BlackScholes/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/BlackScholes_nvrtc/CMakeLists.txt b/cpp/5_Domain_Specific/BlackScholes_nvrtc/CMakeLists.txt
+index eae3d40..05a3383 100644
+--- a/cpp/5_Domain_Specific/BlackScholes_nvrtc/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/BlackScholes_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/FDTD3d/CMakeLists.txt b/cpp/5_Domain_Specific/FDTD3d/CMakeLists.txt
+index 1a1d50b..3999084 100644
+--- a/cpp/5_Domain_Specific/FDTD3d/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/FDTD3d/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/HSOpticalFlow/CMakeLists.txt b/cpp/5_Domain_Specific/HSOpticalFlow/CMakeLists.txt
+index b80b246..90ee645 100644
+--- a/cpp/5_Domain_Specific/HSOpticalFlow/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/HSOpticalFlow/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/Mandelbrot/CMakeLists.txt b/cpp/5_Domain_Specific/Mandelbrot/CMakeLists.txt
+index 4bfcc92..5762e21 100644
+--- a/cpp/5_Domain_Specific/Mandelbrot/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/Mandelbrot/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ target_compile_features(Mandelbrot PRIVATE cxx_std_17 cuda_std_17)
+ 
+         target_link_libraries(Mandelbrot
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to the output directory
+@@ -63,7 +63,7 @@ target_compile_features(Mandelbrot PRIVATE cxx_std_17 cuda_std_17)
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(Mandelbrot
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ target_compile_features(Mandelbrot PRIVATE cxx_std_17 cuda_std_17)
+ 
+             add_custom_command(TARGET Mandelbrot
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET Mandelbrot
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/MonteCarloMultiGPU/CMakeLists.txt b/cpp/5_Domain_Specific/MonteCarloMultiGPU/CMakeLists.txt
+index 1c8522c..5f73fa1 100644
+--- a/cpp/5_Domain_Specific/MonteCarloMultiGPU/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/MonteCarloMultiGPU/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/NV12toBGRandResize/CMakeLists.txt b/cpp/5_Domain_Specific/NV12toBGRandResize/CMakeLists.txt
+index 765a82a..3e640cf 100644
+--- a/cpp/5_Domain_Specific/NV12toBGRandResize/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/NV12toBGRandResize/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/SobelFilter/CMakeLists.txt b/cpp/5_Domain_Specific/SobelFilter/CMakeLists.txt
+index 31d1694..257a8eb 100644
+--- a/cpp/5_Domain_Specific/SobelFilter/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/SobelFilter/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(SobelFilter
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         add_custom_command(TARGET SobelFilter POST_BUILD
+@@ -62,7 +62,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(SobelFilter
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -70,14 +70,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET SobelFilter
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET SobelFilter
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/SobolQRNG/CMakeLists.txt b/cpp/5_Domain_Specific/SobolQRNG/CMakeLists.txt
+index 341c4f2..f3ddc45 100644
+--- a/cpp/5_Domain_Specific/SobolQRNG/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/SobolQRNG/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/bicubicTexture/CMakeLists.txt b/cpp/5_Domain_Specific/bicubicTexture/CMakeLists.txt
+index 4e4f375..6431cd5 100644
+--- a/cpp/5_Domain_Specific/bicubicTexture/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/bicubicTexture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(bicubicTexture
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to the output directory
+@@ -63,7 +63,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(bicubicTexture
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET bicubicTexture
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET bicubicTexture
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/bilateralFilter/CMakeLists.txt b/cpp/5_Domain_Specific/bilateralFilter/CMakeLists.txt
+index 94a8b1c..226a331 100644
+--- a/cpp/5_Domain_Specific/bilateralFilter/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/bilateralFilter/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ target_compile_features(bilateralFilter PRIVATE cxx_std_17 cuda_std_17)
+ 
+         target_link_libraries(bilateralFilter
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to the output directory
+@@ -63,7 +63,7 @@ target_compile_features(bilateralFilter PRIVATE cxx_std_17 cuda_std_17)
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(bilateralFilter
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -71,14 +71,14 @@ target_compile_features(bilateralFilter PRIVATE cxx_std_17 cuda_std_17)
+ 
+             add_custom_command(TARGET bilateralFilter
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET bilateralFilter
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/binomialOptions/CMakeLists.txt b/cpp/5_Domain_Specific/binomialOptions/CMakeLists.txt
+index 63eaf82..acc0415 100644
+--- a/cpp/5_Domain_Specific/binomialOptions/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/binomialOptions/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/binomialOptions_nvrtc/CMakeLists.txt b/cpp/5_Domain_Specific/binomialOptions_nvrtc/CMakeLists.txt
+index dcde9f4..01aabe0 100644
+--- a/cpp/5_Domain_Specific/binomialOptions_nvrtc/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/binomialOptions_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/convolutionFFT2D/CMakeLists.txt b/cpp/5_Domain_Specific/convolutionFFT2D/CMakeLists.txt
+index 4e61664..ca1ce76 100644
+--- a/cpp/5_Domain_Specific/convolutionFFT2D/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/convolutionFFT2D/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/dwtHaar1D/CMakeLists.txt b/cpp/5_Domain_Specific/dwtHaar1D/CMakeLists.txt
+index 0e1bfdb..380350c 100644
+--- a/cpp/5_Domain_Specific/dwtHaar1D/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/dwtHaar1D/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/dxtc/CMakeLists.txt b/cpp/5_Domain_Specific/dxtc/CMakeLists.txt
+index 90b336b..1edba6f 100644
+--- a/cpp/5_Domain_Specific/dxtc/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/dxtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/fastWalshTransform/CMakeLists.txt b/cpp/5_Domain_Specific/fastWalshTransform/CMakeLists.txt
+index d893e7a..581938d 100644
+--- a/cpp/5_Domain_Specific/fastWalshTransform/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/fastWalshTransform/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/fluidsGL/CMakeLists.txt b/cpp/5_Domain_Specific/fluidsGL/CMakeLists.txt
+index b9e7023..10eaf32 100644
+--- a/cpp/5_Domain_Specific/fluidsGL/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/fluidsGL/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ target_compile_features(fluidsGL PRIVATE cxx_std_17 cuda_std_17)
+ 
+         target_link_libraries(fluidsGL
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+             CUDA::cufft
+         )
+ 
+@@ -64,7 +64,7 @@ target_compile_features(fluidsGL PRIVATE cxx_std_17 cuda_std_17)
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(fluidsGL
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -72,14 +72,14 @@ target_compile_features(fluidsGL PRIVATE cxx_std_17 cuda_std_17)
+ 
+             add_custom_command(TARGET fluidsGL
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET fluidsGL
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/marchingCubes/CMakeLists.txt b/cpp/5_Domain_Specific/marchingCubes/CMakeLists.txt
+index 7970b60..cf40c90 100644
+--- a/cpp/5_Domain_Specific/marchingCubes/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/marchingCubes/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -47,7 +47,7 @@ target_compile_features(marchingCubes PRIVATE cxx_std_17 cuda_std_17)
+ 
+         target_link_libraries(marchingCubes
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         # Copy data files to the output directory
+@@ -57,7 +57,7 @@ target_compile_features(marchingCubes PRIVATE cxx_std_17 cuda_std_17)
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(marchingCubes
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/glew64.lib
+@@ -65,14 +65,14 @@ target_compile_features(marchingCubes PRIVATE cxx_std_17 cuda_std_17)
+ 
+             add_custom_command(TARGET marchingCubes
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET marchingCubes
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/glew64.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/nbody/CMakeLists.txt b/cpp/5_Domain_Specific/nbody/CMakeLists.txt
+index e8ff90a..92de2f1 100644
+--- a/cpp/5_Domain_Specific/nbody/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/nbody/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,10 +53,10 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(nbody
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(nbody
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -64,14 +64,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET nbody
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET nbody
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/p2pBandwidthLatencyTest/CMakeLists.txt b/cpp/5_Domain_Specific/p2pBandwidthLatencyTest/CMakeLists.txt
+index 0f60b10..6ce9a8c 100644
+--- a/cpp/5_Domain_Specific/p2pBandwidthLatencyTest/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/p2pBandwidthLatencyTest/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/postProcessGL/CMakeLists.txt b/cpp/5_Domain_Specific/postProcessGL/CMakeLists.txt
+index a8bf546..6229a89 100644
+--- a/cpp/5_Domain_Specific/postProcessGL/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/postProcessGL/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(postProcessGL
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         add_custom_command(TARGET postProcessGL POST_BUILD
+@@ -62,7 +62,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(postProcessGL
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -70,14 +70,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET postProcessGL
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET postProcessGL
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/quasirandomGenerator/CMakeLists.txt b/cpp/5_Domain_Specific/quasirandomGenerator/CMakeLists.txt
+index 55b4308..41b9557 100644
+--- a/cpp/5_Domain_Specific/quasirandomGenerator/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/quasirandomGenerator/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/quasirandomGenerator_nvrtc/CMakeLists.txt b/cpp/5_Domain_Specific/quasirandomGenerator_nvrtc/CMakeLists.txt
+index 1b9d16e..ad88d12 100644
+--- a/cpp/5_Domain_Specific/quasirandomGenerator_nvrtc/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/quasirandomGenerator_nvrtc/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/recursiveGaussian/CMakeLists.txt b/cpp/5_Domain_Specific/recursiveGaussian/CMakeLists.txt
+index f62df8d..5f7fef8 100644
+--- a/cpp/5_Domain_Specific/recursiveGaussian/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/recursiveGaussian/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(recursiveGaussian
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         add_custom_command(TARGET recursiveGaussian POST_BUILD
+@@ -62,7 +62,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(recursiveGaussian
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -70,14 +70,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET recursiveGaussian
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET recursiveGaussian
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/simpleD3D11/CMakeLists.txt b/cpp/5_Domain_Specific/simpleD3D11/CMakeLists.txt
+index 713ce7e..c3d156b 100644
+--- a/cpp/5_Domain_Specific/simpleD3D11/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/simpleD3D11/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/simpleD3D11Texture/CMakeLists.txt b/cpp/5_Domain_Specific/simpleD3D11Texture/CMakeLists.txt
+index 86c9084..f72ffb2 100644
+--- a/cpp/5_Domain_Specific/simpleD3D11Texture/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/simpleD3D11Texture/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/simpleD3D12/CMakeLists.txt b/cpp/5_Domain_Specific/simpleD3D12/CMakeLists.txt
+index 7291c8d..2b945ec 100644
+--- a/cpp/5_Domain_Specific/simpleD3D12/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/simpleD3D12/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/simpleGL/CMakeLists.txt b/cpp/5_Domain_Specific/simpleGL/CMakeLists.txt
+index 782a473..4747e8c 100644
+--- a/cpp/5_Domain_Specific/simpleGL/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/simpleGL/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,10 +53,10 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(simpleGL
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(simpleGL
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -64,7 +64,7 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET simpleGL
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/simpleVulkan/CMakeLists.txt b/cpp/5_Domain_Specific/simpleVulkan/CMakeLists.txt
+index 1462479..474e03b 100644
+--- a/cpp/5_Domain_Specific/simpleVulkan/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/simpleVulkan/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/simpleVulkanMMAP/CMakeLists.txt b/cpp/5_Domain_Specific/simpleVulkanMMAP/CMakeLists.txt
+index cc18506..cd81367 100644
+--- a/cpp/5_Domain_Specific/simpleVulkanMMAP/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/simpleVulkanMMAP/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/smokeParticles/CMakeLists.txt b/cpp/5_Domain_Specific/smokeParticles/CMakeLists.txt
+index ccee88f..02274f3 100644
+--- a/cpp/5_Domain_Specific/smokeParticles/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/smokeParticles/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(smokeParticles
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         add_custom_command(TARGET smokeParticles POST_BUILD
+@@ -62,7 +62,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(smokeParticles
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -70,14 +70,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET smokeParticles
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET smokeParticles
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/stereoDisparity/CMakeLists.txt b/cpp/5_Domain_Specific/stereoDisparity/CMakeLists.txt
+index ad2ff7b..6f90f49 100644
+--- a/cpp/5_Domain_Specific/stereoDisparity/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/stereoDisparity/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/5_Domain_Specific/volumeFiltering/CMakeLists.txt b/cpp/5_Domain_Specific/volumeFiltering/CMakeLists.txt
+index 639b4f1..b8a69e4 100644
+--- a/cpp/5_Domain_Specific/volumeFiltering/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/volumeFiltering/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(volumeFiltering
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         add_custom_command(TARGET volumeFiltering POST_BUILD
+@@ -62,7 +62,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(volumeFiltering
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -70,14 +70,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET volumeFiltering
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET volumeFiltering
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/volumeRender/CMakeLists.txt b/cpp/5_Domain_Specific/volumeRender/CMakeLists.txt
+index bd9928e..7c5823c 100644
+--- a/cpp/5_Domain_Specific/volumeRender/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/volumeRender/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+@@ -53,7 +53,7 @@ if(${OpenGL_FOUND})
+ 
+         target_link_libraries(volumeRender
+             ${OPENGL_LIBRARIES}
+-            ${GLUT_LIBRARIES}
++            GLUT::GLUT GLEW::GLEW
+         )
+ 
+         add_custom_command(TARGET volumeRender POST_BUILD
+@@ -62,7 +62,7 @@ if(${OpenGL_FOUND})
+             ${CMAKE_CURRENT_BINARY_DIR}/data
+         )
+ 
+-        if(WIN32)
++        if(0)
+             target_link_libraries(volumeRender
+                 ${PC_GLUT_LIBRARY_DIRS}/freeglut.lib
+                 ${PC_GLUT_LIBRARY_DIRS}/${GLEW_LIB_NAME}.lib
+@@ -70,14 +70,14 @@ if(${OpenGL_FOUND})
+ 
+             add_custom_command(TARGET volumeRender
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/freeglut.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+ 
+             add_custom_command(TARGET volumeRender
+                 POST_BUILD
+-                COMMAND ${CMAKE_COMMAND} -E copy
++                COMMAND ${CMAKE_COMMAND} -E echo copy
+                 ${CMAKE_CURRENT_SOURCE_DIR}/../../../bin/win64/$<CONFIGURATION>/${GLEW_LIB_NAME}.dll
+                 ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIGURATION>
+             )
+diff --git a/cpp/5_Domain_Specific/vulkanImageCUDA/CMakeLists.txt b/cpp/5_Domain_Specific/vulkanImageCUDA/CMakeLists.txt
+index c7dcd99..fa79528 100644
+--- a/cpp/5_Domain_Specific/vulkanImageCUDA/CMakeLists.txt
++++ b/cpp/5_Domain_Specific/vulkanImageCUDA/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/6_Performance/LargeKernelParameter/CMakeLists.txt b/cpp/6_Performance/LargeKernelParameter/CMakeLists.txt
+index 8131722..4439c29 100644
+--- a/cpp/6_Performance/LargeKernelParameter/CMakeLists.txt
++++ b/cpp/6_Performance/LargeKernelParameter/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ 
+ if(ENABLE_CUDA_DEBUG)
+diff --git a/cpp/6_Performance/UnifiedMemoryPerf/CMakeLists.txt b/cpp/6_Performance/UnifiedMemoryPerf/CMakeLists.txt
+index 9ebabf2..813316b 100644
+--- a/cpp/6_Performance/UnifiedMemoryPerf/CMakeLists.txt
++++ b/cpp/6_Performance/UnifiedMemoryPerf/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/6_Performance/alignedTypes/CMakeLists.txt b/cpp/6_Performance/alignedTypes/CMakeLists.txt
+index fc74c45..e887619 100644
+--- a/cpp/6_Performance/alignedTypes/CMakeLists.txt
++++ b/cpp/6_Performance/alignedTypes/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/6_Performance/cudaGraphsPerfScaling/CMakeLists.txt b/cpp/6_Performance/cudaGraphsPerfScaling/CMakeLists.txt
+index 0a89460..19e5668 100644
+--- a/cpp/6_Performance/cudaGraphsPerfScaling/CMakeLists.txt
++++ b/cpp/6_Performance/cudaGraphsPerfScaling/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
+diff --git a/cpp/6_Performance/transpose/CMakeLists.txt b/cpp/6_Performance/transpose/CMakeLists.txt
+index 5c92d03..e9d97c1 100644
+--- a/cpp/6_Performance/transpose/CMakeLists.txt
++++ b/cpp/6_Performance/transpose/CMakeLists.txt
+@@ -8,7 +8,7 @@ find_package(CUDAToolkit REQUIRED)
+ 
+ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ 
+-set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
++#set(CMAKE_CUDA_ARCHITECTURES 75 80 86 87 89 90 100 110 120)
+ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Wno-deprecated-gpu-targets")
+ if(ENABLE_CUDA_DEBUG)
+     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -G")        # enable cuda-gdb (may significantly affect performance on some targets)
