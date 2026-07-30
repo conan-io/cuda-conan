@@ -6,16 +6,17 @@ x86_64. This guide covers adding CUDA to an existing `conanfile.py`, cross-compi
 verifying the setup.
 
 > [!NOTE]
-> CUDA 13.4 is a currently a **developer preview**, made available by NVIDIA so that Developers can start porting their applications. See [Release Notes](https://docs.nvidia.com/cuda/developer-preview/13.4/cuda-toolkit-release-notes/index.html).
+> CUDA 13.4 is a currently a **developer preview**, made available by NVIDIA so that Developers can start porting their applications.
+> See [Release Notes](https://docs.nvidia.com/cuda/developer-preview/13.4/cuda-toolkit-release-notes/index.html).
 
 ## Prerequisites
 
 - A recent version of Conan 2 (>=2.31.1 recommended)
 - Visual Studio 2022 or 2026, with the **Arm64 MSVC toolset** installed:
-  1. Open the **Visual Studio Installer** → **Modify** your installation.
-  2. Under **Individual components**, search for **"ARM64"** and select the **C++ ARM64 build tools**
+  * Open the **Visual Studio Installer** → **Modify** your installation.
+  * Under **Individual components**, search for **"ARM64"** and select the **C++ ARM64 build tools**
      component for your version (e.g. **MSVC v143 - VS 2022 C++ ARM64 build tools**).
-  3. Apply.
+  * Apply.
 
   This is required whether you're cross-building from x86_64 or building natively on an Arm64 device — see
   [Arm64 Visual Studio is officially here!](https://devblogs.microsoft.com/visualstudio/arm64-visual-studio-is-officially-here/)
@@ -87,11 +88,11 @@ cd cuda-conan/samples/cuda-samples
 conan build . -s arch=armv8 -c tools.cmake.cmaketoolchain:generator=Ninja -cc core.version_ranges:resolve_prereleases=True
 ```
 
-* if building on Windows `armv8`, it will simply be built natively, and the executables will run
+* if building on Windows `armv8`, the samples will be built natively and the executables can be run on your development device
 * if cross-building from `x86_64`, Conan will set up the cross-build for you
-* if you want to build and run natively on Windows x86_64, simply remove the `-arch` argument.
+* if you want to build and run natively on Windows x86_64, simply remove the `-s -arch=` argument.
 
-Note that `-cc core.version_ranges:resolve_prereleases=True` is needed as 13.4.0 is explicitly published as a pre-release.
+Note that `-cc core.version_ranges:resolve_prereleases=True` is required as 13.4.0 is explicitly published as a pre-release.
 
 Once the build finishes, you can run any of the executables in the build if built for your CPU architecture. Remember to first load up `conanrun.bat` so that Conan configures the run environment for you, e.g.:
 
@@ -102,10 +103,6 @@ build\Release\cpp\1_Utilities\deviceQuery\deviceQuery.exe
 
 The application should lunch successfuly. If there is no GPU with an NVIDIA driver installed, it should simply report that cudaGetDeviceCount returned an error querying the devices.
 
-
-> [!NOTE]
-> `llama-cpp` does not support Arm64 with `msvc` (see the recipe's `validate_build`) — use `clang` for the
-> Arm64 host profile instead.
 
 ## Current limitations
 
