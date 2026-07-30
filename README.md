@@ -84,3 +84,7 @@ The `samples/` folder contains reference implementations of recipes that make us
 - `libtorch`
 - `llama-cpp`
 - `onnxruntime`
+
+### Documentation and tutorials
+
+- [Building CUDA-enabled applications for Windows 11 on ARM (NVIDIA RTX Spark)](docs/building-for-windows-on-arm.md)
