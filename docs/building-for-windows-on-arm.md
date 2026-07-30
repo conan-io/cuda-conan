@@ -45,7 +45,7 @@ enable_language(CUDA)
 find_package(CUDAToolkit)
 ```
 
-Conan resolves the toolkit and `find_package(CUDAToolkit)` finds it — no need for a system-wide CUDA install, no environment variables to point to specific CUDA installations, and nothing extra to configure in CI beyond having Conan available - it's the same as with other dependencies.
+Conan resolves and provides the dependency and `find_package(CUDAToolkit)` finds it — no need for a system-wide CUDA install, no environment variables to point to specific CUDA installations, and nothing extra to configure in CI beyond having Conan available - it's the same as with other dependencies.
 
 In your Conan profile, it is recommended that you add the following configuration for your desired GPU architecture(s), for example:
 
@@ -61,8 +61,7 @@ Cross-compiling does not require ARM64 hardware and can be performed on existing
 conan create . -s arch=armv8
 ```
 
-Conan resolves the graph to ensure that `nvcc` that runs on the x86_64 build machine (via `tool_requires`) and links against CUDA
-libraries built for ARM64 (via `requires`), producing an ARM64 binary.
+When cross-building, Conan ensures that `nvcc` runs on your x86_64 workstation, while the CUDA libraries linked into your application are ARM64.
 
 ## Example: building and running `cuda-samples`
 
