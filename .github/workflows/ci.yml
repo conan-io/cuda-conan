@@ -18,6 +18,8 @@ jobs:
             cuda-version: "13.0"
           - os: ubuntu-latest
             cuda-version: "13.2"
+          - os: ubuntu-24.04-arm
+            cuda-version: "13.2"
           # Windows:
           # cuda <13.2 requires Visual Studio 2022, available on windows-2022 runner
           - os: windows-2022
@@ -63,25 +65,31 @@ jobs:
         if: matrix.cross-arch != ''
         run: conan test recipes/cuda-toolkit/${{ matrix.cuda-version }}/test_package cuda-toolkit/13.4.0-preview -s arch=${{ matrix.cross-arch }} -c tools.cmake.cmaketoolchain:generator=Ninja
 
+      - name: build cuda-samples
+        if: matrix.os != 'windows-11-arm' && (matrix.cuda-version == '13.2' || (matrix.cuda-version == '13.4' && startsWith(matrix.os, 'windows')))
+        working-directory: samples/cuda-samples
+        run: |
+          conan source .
+          conan install . --build=missing -cc core.version_ranges:resolve_prereleases=True
+          conan build . -cc core.version_ranges:resolve_prereleases=True
+
       # Skip the following for 13.4-preview
       - name: conan create cudnn
-        if: matrix.cuda-version != '13.4'
-        run: conan create recipes/cudnn/9.x --version 9.24.0
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
+        run: conan create recipes/cudnn/9.x --version 9.24.0 --build=missing
 
       - name: conan create cudnn-frontend
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cudnn-frontend/all --version 1.12.1
 
       - name: conan create cudss
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cudss/0.7.1 --version 0.7.1
 
       - name: conan create cusparselt
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cusparselt/0.8.1 --version 0.8.1
 
       - name: conan create cutlass
-        if: matrix.cuda-version != '13.4'
+        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
         run: conan create recipes/cutlass/all --version 4.3.5
-
-    # TODO: build samples
