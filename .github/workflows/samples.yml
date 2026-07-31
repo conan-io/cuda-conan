@@ -17,13 +17,30 @@ on:
         default: all
 
 jobs:
-  libtorch:
-    if: github.event.inputs.recipe == 'all' || github.event.inputs.recipe == 'libtorch'
-    name: libtorch (${{ matrix.os }})
+  filter-recipes:
+    name: Filter recipes
+    runs-on: ubuntu-latest
+    outputs:
+      recipes: ${{ steps.filter.outputs.recipes }}
+    steps:
+      - id: filter
+        run: |
+          all='[{"name":"libtorch","version":"2.9.1"},{"name":"onnxruntime","version":"1.24.4"},{"name":"llama-cpp","version":"b6565"}]'
+          recipe="${{ github.event.inputs.recipe }}"
+          if [ "$recipe" = "all" ]; then
+            echo "recipes=$all" >> "$GITHUB_OUTPUT"
+          else
+            echo "recipes=$(echo "$all" | jq -c --arg r "$recipe" '[.[] | select(.name == $r)]')" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: filter-recipes
+    name: ${{ matrix.recipe.name }} (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        recipe: ${{ fromJSON(needs.filter-recipes.outputs.recipes) }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -43,63 +60,5 @@ jobs:
       - name: Add cuda-conan local recipes index remote
         run: conan remote add cuda-conan ./ --index=0 -t local-recipes-index
 
-      - name: conan create libtorch
-        run: conan create samples/libtorch/all --version 2.9.1 --build=missing
-
-  onnxruntime:
-    if: github.event.inputs.recipe == 'all' || github.event.inputs.recipe == 'onnxruntime'
-    name: onnxruntime (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Conan
-        uses: conan-io/setup-conan@v1
-        with:
-          profile_detect: false
-
-      - name: Autodetect conan profile
-        run: conan profile detect --name autodetected
-
-      - name: Install Conan profile config
-        run: conan config install .github/conan-config -t dir
-
-      - name: Add cuda-conan local recipes index remote
-        run: conan remote add cuda-conan ./ --index=0 -t local-recipes-index
-
-      - name: conan create onnxruntime
-        run: conan create samples/onnxruntime/all --version 1.24.4 --build=missing
-
-  llama-cpp:
-    if: github.event.inputs.recipe == 'all' || github.event.inputs.recipe == 'llama-cpp'
-    name: llama-cpp (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Setup Conan
-        uses: conan-io/setup-conan@v1
-        with:
-          profile_detect: false
-
-      - name: Autodetect conan profile
-        run: conan profile detect --name autodetected
-
-      - name: Install Conan profile config
-        run: conan config install .github/conan-config -t dir
-
-      - name: Add cuda-conan local recipes index remote
-        run: conan remote add cuda-conan ./ --index=0 -t local-recipes-index
-
-      - name: conan create llama-cpp
-        run: conan create samples/llama-cpp/all --version=b6565 --build=missing
+      - name: conan create ${{ matrix.recipe.name }}
+        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} --build=missing
