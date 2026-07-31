@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-2022]
         recipe: ${{ fromJSON(needs.filter-recipes.outputs.recipes) }}
     runs-on: ${{ matrix.os }}
     env:
