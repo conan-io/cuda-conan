@@ -134,7 +134,10 @@ class CudaToolkitConan(ConanFile):
             arch = "sbsa" if self.settings.arch == "armv8" else str(self.settings.arch)
             self.buildenv_info.define_path("CUDAToolkit_ROOT", self.package_folder)
             self.buildenv_info.define_path("CONAN_CUDA_TARGET_DIR", os.path.join(self.package_folder, "targets", f"{arch}-linux"))
-        
+            if self.conf.get("user.cudatoolkit:expose_stubs", default=False, check_type=bool):
+                # Only on user request, for CI environments that dont have `libcuda.so` or the drive installed
+                # # This can be used to test linking was correct.
+                self.runenv_info.prepend_path("LD_LIBRARY_PATH", os.path.join(self.package_folder, "lib64/stubs"))       
         if self.settings.os == "Linux":
             self.cpp_info.libdirs = ["lib64"]
         else:
