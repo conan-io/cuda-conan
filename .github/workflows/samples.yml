@@ -1,0 +1,64 @@
+name: Samples
+
+# Builds sample integrations from the samples/ folder (everything except cuda-samples,
+# which is already exercised in ci.yml). Manual trigger only, since these are heavier
+# CUDA-enabled builds (libtorch, onnxruntime) not otherwise covered by CI.
+on:
+  workflow_dispatch:
+    inputs:
+      recipe:
+        description: Which sample recipe to build
+        type: choice
+        options:
+          - all
+          - libtorch
+          - onnxruntime
+          - llama-cpp
+        default: all
+
+jobs:
+  filter-recipes:
+    name: Filter recipes
+    runs-on: ubuntu-latest
+    outputs:
+      recipes: ${{ steps.filter.outputs.recipes }}
+    steps:
+      - id: filter
+        run: |
+          all='[{"name":"libtorch","version":"2.9.1"},{"name":"onnxruntime","version":"1.24.4"},{"name":"llama-cpp","version":"b6565"}]'
+          recipe="${{ github.event.inputs.recipe }}"
+          if [ "$recipe" = "all" ]; then
+            echo "recipes=$all" >> "$GITHUB_OUTPUT"
+          else
+            echo "recipes=$(echo "$all" | jq -c --arg r "$recipe" '[.[] | select(.name == $r)]')" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: filter-recipes
+    name: ${{ matrix.recipe.name }} (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        recipe: ${{ fromJSON(needs.filter-recipes.outputs.recipes) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Conan
+        uses: conan-io/setup-conan@v1
+        with:
+          profile_detect: false
+
+      - name: Autodetect conan profile
+        run: conan profile detect --name autodetected
+
+      - name: Install Conan profile config
+        run: conan config install .github/conan-config -t dir
+
+      - name: Add cuda-conan local recipes index remote
+        run: conan remote add cuda-conan ./ --index=0 -t local-recipes-index
+
+      - name: conan create ${{ matrix.recipe.name }}
+        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} --build=missing
