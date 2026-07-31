@@ -25,7 +25,11 @@ jobs:
     steps:
       - id: filter
         run: |
-          all='[{"name":"libtorch","version":"2.9.1"},{"name":"onnxruntime","version":"1.24.4"},{"name":"llama-cpp","version":"b6565"}]'
+          all='[
+            {"name": "libtorch",    "version": "2.9.1",  "extra_args": "-o *:shared=True"},
+            {"name": "onnxruntime", "version": "1.24.4", "extra_args": "-o *:shared=True"},
+            {"name": "llama-cpp",   "version": "b6565",  "extra_args": "-o *:shared=True"}
+          ]'
           recipe="${{ github.event.inputs.recipe }}"
           if [ "$recipe" = "all" ]; then
             echo "recipes=$all" >> "$GITHUB_OUTPUT"
@@ -42,6 +46,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         recipe: ${{ fromJSON(needs.filter-recipes.outputs.recipes) }}
     runs-on: ${{ matrix.os }}
+    env:
+      CI_SAMPLES_JOB: 1
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -61,4 +67,4 @@ jobs:
         run: conan remote add cuda-conan ./ --index=0 -t local-recipes-index
 
       - name: conan create ${{ matrix.recipe.name }}
-        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} --build=missing
+        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} --build=missing ${{ matrix.recipe.extra_args }}

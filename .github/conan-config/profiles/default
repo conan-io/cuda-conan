@@ -12,3 +12,7 @@ tools.system.package_manager:sudo=True
 {% endif %}
 
 cuda-samples/*:tools.cmake.cmaketoolchain:generator=Ninja
+
+{% if os.environ.get("CI_SAMPLES_JOB") %}
+tools.cmake.cmaketoolchain:generator=Ninja
+{% endif %}
