@@ -132,7 +132,9 @@ class OnnxRuntimeConan(ConanFile):
             # CCCL headers shipped with CUDA 12.4+ / 13.x require MSVC's standard-conforming
             # preprocessor; without /Zc:preprocessor cl.exe falls back to the traditional
             # preprocessor and fails compiling <cuda/std/...> with C1189.
-            # nvcc forwards host-compiler flags via -Xcompiler=.
+            # Host-only .cc files under contrib_ops/cuda include those headers too, so the
+            # flag is needed for CXX as well, and nvcc forwards it via -Xcompiler=.
+            tc.extra_cxxflags.append("/Zc:preprocessor")
             tc.cache_variables["CMAKE_CUDA_FLAGS"] = "-Xcompiler=/Zc:preprocessor"
 
         if self.options.get_safe("with_tensorrt"):
