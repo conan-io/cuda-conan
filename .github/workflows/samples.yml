@@ -77,4 +77,4 @@ jobs:
         run: conan remote add cuda-conan ./ --index=0 -t local-recipes-index
 
       - name: conan create ${{ matrix.recipe.name }}
-        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} --build=missing
+        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} -o *:shared=True --build=missing
