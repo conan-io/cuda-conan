@@ -24,7 +24,7 @@ class TestPackageConan(ConanFile):
         if self.settings.os == "Windows":
             # on windows the system dll C:\WINDOWS\system32\onnxruntime.dll may be loaded instead even if the conan lib is first in the PATH, see https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order
             for bindir in self.dependencies[self.tested_reference_str].cpp_info.bindirs:
-                copy(self, "*.dll", bindir, os.path.join(self.build_folder, str(self.settings.build_type)))
+                copy(self, "*.dll", bindir, os.path.join(self.build_folder, self.cpp.build.bindir))
 
         if self.settings.os == "Linux" and not self.dependencies["onnxruntime"].options.shared:
             # the providers are always dlopend() - when the library is static,
