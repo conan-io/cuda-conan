@@ -128,6 +128,15 @@ class OnnxRuntimeConan(ConanFile):
         tc.variables["onnxruntime_USE_NEURAL_SPEED"] = False
         tc.variables["onnxruntime_USE_MEMORY_EFFICIENT_ATTENTION"] = False
 
+        if self.options.with_cuda and self.settings.compiler == "msvc":
+            # CCCL headers shipped with CUDA 12.4+ / 13.x require MSVC's standard-conforming
+            # preprocessor; without /Zc:preprocessor cl.exe falls back to the traditional
+            # preprocessor and fails compiling <cuda/std/...> with C1189.
+            # Host-only .cc files under contrib_ops/cuda include those headers too, so the
+            # flag is needed for CXX as well, and nvcc forwards it via -Xcompiler=.
+            tc.extra_cxxflags.append("/Zc:preprocessor")
+            tc.cache_variables["CMAKE_CUDA_FLAGS"] = "-Xcompiler=/Zc:preprocessor"
+
         if self.options.get_safe("with_tensorrt"):
             tc.cache_variables["onnxruntime_USE_TENSORRT"] = True
             tc.cache_variables["onnxruntime_USE_TENSORRT_BUILTIN_PARSER"] = True

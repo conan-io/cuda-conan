@@ -15,6 +15,14 @@ on:
           - onnxruntime
           - llama-cpp
         default: all
+      os:
+        description: Which OS(es) to build on
+        type: choice
+        options:
+          - all
+          - linux
+          - windows
+        default: all
 
 jobs:
   filter-recipes:
@@ -22,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       recipes: ${{ steps.filter.outputs.recipes }}
+      os: ${{ steps.filter.outputs.os }}
     steps:
       - id: filter
         run: |
@@ -33,13 +42,20 @@ jobs:
             echo "recipes=$(echo "$all" | jq -c --arg r "$recipe" '[.[] | select(.name == $r)]')" >> "$GITHUB_OUTPUT"
           fi
 
+          os="${{ github.event.inputs.os }}"
+          case "$os" in
+            linux)   echo 'os=["ubuntu-latest"]' >> "$GITHUB_OUTPUT" ;;
+            windows) echo 'os=["windows-2022"]' >> "$GITHUB_OUTPUT" ;;
+            *)       echo 'os=["ubuntu-latest", "windows-2022"]' >> "$GITHUB_OUTPUT" ;;
+          esac
+
   build:
     needs: filter-recipes
     name: ${{ matrix.recipe.name }} (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: ${{ fromJSON(needs.filter-recipes.outputs.os) }}
         recipe: ${{ fromJSON(needs.filter-recipes.outputs.recipes) }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -61,4 +77,4 @@ jobs:
         run: conan remote add cuda-conan ./ --index=0 -t local-recipes-index
 
       - name: conan create ${{ matrix.recipe.name }}
-        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} --build=missing
+        run: conan create samples/${{ matrix.recipe.name }}/all --version ${{ matrix.recipe.version }} -o *:shared=True --build=missing
