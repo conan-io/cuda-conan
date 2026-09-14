@@ -28,14 +28,15 @@ class LlamaCppConan(ConanFile):
         "with_cuda": [True, False],
         "with_curl": [True, False],
         "with_vulkan": [True, False],
+        "with_openssl": [True, False],
     }
     default_options = {
         "shared": False,
         "fPIC": True,
         "with_examples": False,
         "with_cuda": True,
-        "with_curl": False,
         "with_vulkan": False,
+        "with_openssl": True,
     }
 
     implements = ["auto_shared_fpic"]
@@ -57,9 +58,8 @@ class LlamaCppConan(ConanFile):
         cmake_layout(self, src_folder="src")
 
     def requirements(self):
-        if self.options.with_curl:
-            self.requires("libcurl/[>=7.78 <9]")
-
+        if self.options.get_safe("with_openssl"):
+            self.requires("openssl/[>=1.1 <4]")
         if self.options.get_safe("with_vulkan"):
             self.requires("vulkan-loader/[>=1.3 <1.5]")
 
@@ -82,7 +82,7 @@ class LlamaCppConan(ConanFile):
         tc.variables["LLAMA_STANDALONE"] = False
         tc.variables["LLAMA_BUILD_TESTS"] = False
         tc.variables["LLAMA_BUILD_EXAMPLES"] = self.options.get_safe("with_examples")
-        tc.variables["LLAMA_CURL"] = self.options.get_safe("with_curl")
+        tc.variables["LLAMA_OPENSSL"] = self.options.get_safe("with_openssl")
         if cross_building(self):
             tc.variables["LLAMA_NATIVE"] = False
             tc.variables["GGML_NATIVE_DEFAULT"] = False
@@ -145,12 +145,12 @@ class LlamaCppConan(ConanFile):
         self.cpp_info.components["llama"].requires.append("ggml")
 
         self.cpp_info.components["common"].includedirs = [os.path.join("include", "common")]
-        self.cpp_info.components["common"].libs = ["common"]
+        self.cpp_info.components["common"].libs = ["llama-common"]
         self.cpp_info.components["common"].requires = ["llama"]
 
-        if self.options.with_curl:
-            self.cpp_info.components["common"].requires.append("libcurl::libcurl")
-            self.cpp_info.components["common"].defines.append("LLAMA_USE_CURL")
+        if self.options.with_openssl:
+            self.cpp_info.components["common"].requires.append("openssl::openssl")
+            self.cpp_info.components["common"].defines.append("LLAMA_USE_OPENSSL")
 
         if is_apple_os(self):
             self.cpp_info.components["common"].frameworks.extend(["Foundation", "Accelerate", "Metal"])
@@ -183,6 +183,7 @@ class LlamaCppConan(ConanFile):
             if backend == "cuda":
                 self.cpp_info.components["ggml-cuda"].set_property("cmake_extra_interface_libs",
                             ["CUDA::cudart", "CUDA::cublas", "CUDA::cublasLt", "CUDA::cuda_driver"])
+                self.cpp_info.components["ggml-cuda"].requires.append("cuda-toolkit::cuda-toolkit")
 
             if backend == "vulkan":
                 self.cpp_info.components["ggml-vulkan"].requires.append("vulkan-loader::vulkan-loader")

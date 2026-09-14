@@ -68,7 +68,7 @@ When cross-building, Conan ensures that `nvcc` runs on your x86_64 workstation, 
 [`cuda-samples`](https://github.com/NVIDIA/cuda-samples) is NVIDIA's official collection of example CUDA
 applications. It ranges from minimal examples like
 `vectorAdd` and `deviceQuery` to CUDA library usage (cuBLAS, cuFFT, ...) and domain-specific examples, grouped
-into folders such as `0_Introduction`, `1_Utilities`, and `4_CUDA_Libraries`. 
+into folders such as `0_Introduction`, `1_Utilities`, and `4_CUDA_Libraries`.
 
 This repository contains a recipe to build `cuda-samples` from source using CUDA from Conan, including support for Windows ARM64.
 
@@ -114,7 +114,7 @@ for Windows ARM64:
 
 ```
 cd samples/llama-cpp
-conan create all --version=b6565 -pr clang-cl-arm64 -cc core.version_ranges:resolve_prereleases=True
+conan create all --version=0.4.0 -pr clang-cl-arm64 -cc core.version_ranges:resolve_prereleases=True
 ```
 
 This command can be run on x86_64 Windows and ARM64 Windows. You can customize the CUDA GPU architecture by editing the profile at `samples/llama-cpp/clang-cl-common`.

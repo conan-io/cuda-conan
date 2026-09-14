@@ -34,7 +34,7 @@ jobs:
     steps:
       - id: filter
         run: |
-          all='[{"name":"libtorch","version":"2.9.1"},{"name":"onnxruntime","version":"1.24.4"},{"name":"llama-cpp","version":"b6565"}]'
+          all='[{"name":"libtorch","version":"2.9.1"},{"name":"onnxruntime","version":"1.24.4"},{"name":"llama-cpp","version":"0.4.0"}]'
           recipe="${{ github.event.inputs.recipe }}"
           if [ "$recipe" = "all" ]; then
             echo "recipes=$all" >> "$GITHUB_OUTPUT"

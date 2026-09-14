@@ -83,7 +83,7 @@ jobs:
       - name: conan create llama-cpp
         if: matrix.cuda-version == '13.4' && startsWith(matrix.os, 'windows')
         working-directory: samples/llama-cpp
-        run: conan create all --version=b6565 -cc core.version_ranges:resolve_prereleases=True --build=missing -pr clang-cl-arm64
+        run: conan create all --version=0.4.0 -cc core.version_ranges:resolve_prereleases=True --build=missing -pr clang-cl-arm64
 
       # Skip the following for 13.4-preview
       - name: conan create cudnn
