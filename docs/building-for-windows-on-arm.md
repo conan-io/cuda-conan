@@ -1,13 +1,12 @@
 # Building CUDA-enabled applications for Windows 11 on ARM (NVIDIA RTX Spark)
 
-`cuda-conan` packages the **CUDA Toolkit 13.4.0 developer preview**, the first CUDA release with a compiler
+`cuda-conan` packages the **CUDA Toolkit 13.4**, the first CUDA release with a compiler
 and device libraries that target **Windows 11 on ARM64** — both natively and as a cross-compilation target from
 x86_64. This guide covers adding CUDA to an existing `conanfile.py`, cross-compiling without ARM hardware, and
 verifying the setup.
 
 > [!NOTE]
-> CUDA 13.4 is currently a **developer preview**, made available by NVIDIA so that Developers can start porting their applications.
-> See [Release Notes](https://docs.nvidia.com/cuda/developer-preview/13.4/cuda-toolkit-release-notes/index.html).
+> See the [CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html).
 
 ## Prerequisites
 
@@ -84,14 +83,12 @@ Then build the samples for ARM64:
 ```
 cd cuda-conan/samples/cuda-samples
 
-conan build . -s arch=armv8 -c tools.cmake.cmaketoolchain:generator=Ninja -cc core.version_ranges:resolve_prereleases=True
+conan build . -s arch=armv8 -c tools.cmake.cmaketoolchain:generator=Ninja
 ```
 
 * If building on Windows `armv8`, the samples will be built natively and the executables can be run on your development device
 * If cross-building from `x86_64`, Conan will set up the cross-build for you
 * If you want to build and run natively on Windows x86_64, simply remove the `-s arch=` argument.
-
-Note that `-cc core.version_ranges:resolve_prereleases=True` is required as 13.4.0 is explicitly published as a pre-release.
 
 Once the build finishes, you can run any of the executables in the build if built for your CPU architecture. Remember to first load up `conanrun.bat` so that Conan configures the run environment for you, e.g.:
 
@@ -114,7 +111,7 @@ for Windows ARM64:
 
 ```
 cd samples/llama-cpp
-conan create all --version=b6565 -pr clang-cl-arm64 -cc core.version_ranges:resolve_prereleases=True
+conan create all --version=b6565 -pr clang-cl-arm64
 ```
 
 This command can be run on x86_64 Windows and ARM64 Windows. You can customize the CUDA GPU architecture by editing the profile at `samples/llama-cpp/clang-cl-common`.
@@ -127,13 +124,12 @@ This command can be run on x86_64 Windows and ARM64 Windows. You can customize t
 ## Current limitations
 
 - While the ARM64 binaries will run on any Windows on ARM, CUDA support at runtime can only be tested on NVIDIA-powered devices.
-- At the moment, only `cuda-toolkit` 13.4 preview is available. Other libraries (such as cuDNN) will be made available once they are released publicly by NVIDIA.
+- At the moment, only `cuda-toolkit` supports Windows ARM64 in this repository. Other libraries (such as cuDNN) will be made available once they are released for Windows ARM64 by NVIDIA.
 
 ## References
 
-- [CUDA Toolkit 13.4 Developer Preview release notes](https://docs.nvidia.com/cuda/developer-preview/13.4/cuda-toolkit-release-notes/index.html) — NVIDIA
-- [CUDA Toolkit 13.4 Developer Preview documentation](https://docs.nvidia.com/cuda/developer-preview/13.4/index.html) — NVIDIA
-- [NVIDIA and Microsoft Reinvent Windows PCs for the Age of Personal AI](https://nvidianews.nvidia.com/news/nvidia-microsoft-windows-pcs-agents-rtx-spark) — NVIDIA Newsroom
+- [CUDA Toolkit release notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) — NVIDIA
+- [CUDA Toolkit documentation](https://docs.nvidia.com/cuda/index.html) — NVIDIA
 - [Introducing a powerful new chapter for Windows PCs, accelerated by NVIDIA RTX Spark](https://blogs.windows.com/windowsexperience/2026/05/31/introducing-a-powerful-new-chapter-for-windows-pcs-accelerated-by-nvidia-rtx-spark/) — Microsoft Windows Experience Blog
 
 ## Feedback
