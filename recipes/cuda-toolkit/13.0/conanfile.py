@@ -109,6 +109,12 @@ class CudaToolkitConan(ConanFile):
             include.symlink_to(include_symlink)
             lib.symlink_to(lib64_symlink)
             res.symlink_to(res_symlink)
+
+            # The libcuda.so stub (link-time only) exposed under its SONAME in a folder of its own, so it can
+            # optionally be added to the runtime library path (see package_info) without exposing anything else
+            stub_driver = os.path.join(self.package_folder, "stub-driver")
+            os.makedirs(stub_driver, exist_ok=True)
+            os.symlink(f"../{targets_folder}/lib/stubs/libcuda.so", os.path.join(stub_driver, "libcuda.so.1"))
         elif self.settings.os == "Windows":
             for folder in ["compute-sanitizer", "include", "lib"]:
                 copy(self, "*", src=os.path.join(self.build_folder, "cuda", folder), dst=os.path.join(self.package_folder, folder))
@@ -136,6 +142,12 @@ class CudaToolkitConan(ConanFile):
         
         if self.settings.os == "Linux":
             self.cpp_info.libdirs = ["lib64"]
+
+            # Opt-in, e.g. -c cuda-toolkit/*:user.cuda-toolkit:stub_driver_runtime=True
+            # For machines with no NVIDIA driver (like CI) where CUDA binaries still need to load and run. It must not
+            # be enabled where a real driver exists, as LD_LIBRARY_PATH takes precedence and the stub would shadow it
+            if not self.settings_target and self.conf.get("user.cuda-toolkit:stub_driver_runtime", default=False, check_type=bool):
+                self.runenv_info.prepend_path("LD_LIBRARY_PATH", os.path.join(self.package_folder, "stub-driver"))
         else:
             self.cpp_info.libdirs = ["lib", "lib/x64"]
             self.cpp_info.bindirs = ["bin", "bin/x64"]
