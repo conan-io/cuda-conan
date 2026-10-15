@@ -1,17 +1,15 @@
 import os
-import xml.etree.ElementTree as ET
+import json
+from pathlib import Path
 
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
-from conan.tools.files import copy, download, replace_in_file
-
-
-required_conan_version = ">=2.1.0"
+from conan.tools.files import copy, download, get, load, rename, replace_in_file
 
 
 class CudaToolkitConan(ConanFile):
     name = "cuda-toolkit"
-    version = "13.4.0-preview"
+    version = "13.4.3"
     package_type = "shared-library"
     license = "CUDA Toolkit End-User License Agreement"
     url = "https://github.com/conan-io/cuda-conan"
@@ -20,98 +18,120 @@ class CudaToolkitConan(ConanFile):
     settings = "os", "arch", "compiler", "build_type"
 
     def validate(self):
-        if self.settings.os != "Windows":
-            raise ConanInvalidConfiguration("Only Windows supported, this is a proof of concept for Windows arm64 support based on 13.4.0 developer preview")
-
-    def requirements(self):
-        if self.settings_build.os == "Windows":
-            self.tool_requires("7zip/[*]")
+        if self.settings.os not in ["Windows", "Linux"]:
+            raise ConanInvalidConfiguration("Operating system not supported")
+        if self.settings.arch not in ["x86_64", "armv8"]:
+            raise ConanInvalidConfiguration("Architecture not supported")
 
     def build(self):
-        os = str(self.settings.os)
-        arch = str(self.settings.arch)
+        base_url = "https://developer.download.nvidia.com/compute/cuda/redist"
+        distrib = f"redistrib_{self.version}.json"
+        json_distrib = f"{base_url}/{distrib}"
+        download(self, url=json_distrib, filename=distrib)
+        json_content = load(self, distrib)
+        cuda_distrib = json.loads(json_content)
 
-        installer_url = self.conan_data['sources'][self.version][os][arch]['url']
-        installer_md5 = self.conan_data['sources'][self.version][os][arch]['md5']
-        installer_sha256 = self.conan_data['sources'][self.version][os][arch]['sha256']
+        if self.settings.os == "Linux" and self.settings.arch == "armv8":
+            cuda_platform = "linux-sbsa"
+        elif self.settings.os == "Windows" and self.settings.arch == "armv8":
+            cuda_platform = "windows-arm64"
+        else:
+            cuda_platform = f"{str(self.settings.os).lower()}-{self.settings.arch}"
 
-        self.output.info(f'Cuda installer URL: {installer_url}')
-        installer_filename = "installer"
-        download(self, installer_url, installer_filename, md5=installer_md5, sha256=installer_sha256)
+        self.output.info(f"About to download CUDA toolkit components for {cuda_platform}")
 
-        self.run(f"7z x {installer_filename} -o{self.build_folder}")
-
-        # When cross-building, get nvcc to locate libraries in host package
-        replace_in_file(
-            self,
-            "cuda_nvcc/nvcc/bin/nvcc.profile",
-            'LIBRARIES        =+ $(_SPACE_) "/LIBPATH:$(TOP)/lib/$(_WIN_PLATFORM_)"',
-            'CONAN_CUDA_LIB_DIR ?= $(TOP)/lib/$(_WIN_PLATFORM_)\n'
-            'LIBRARIES        =+ $(_SPACE_) "/LIBPATH:$(CONAN_CUDA_LIB_DIR)"',
-        )
-
-    def package(self):
         components = [
-            "cccl/cccl/cccl.nvi",
-            "cuda_crt/crt/crt.nvi",
-            "cuda_cudart/cudart/cudart.nvi",
-            "cuda_cuobjdump/cuobjdump/cuobjdump.nvi",
-            "cuda_cupti/cupti/cupti.nvi",
-            "cuda_cuxxfilt/cuxxfilt/cuxxfilt.nvi",
-            "cuda_nvcc/nvcc/nvcc.nvi",
-            "cuda_nvdisasm/nvdisasm/nvdisasm.nvi",
-            "cuda_nvml_dev/nvml_dev/nvml_dev.nvi",
-            "cuda_nvprune/nvprune/nvprune.nvi",
-            "cuda_nvrtc/nvrtc_dev/nvrtc_dev.nvi",
-            "cuda_nvrtc/nvrtc/nvrtc.nvi",
-            "cuda_nvtx/nvtx/nvtx.nvi",
-            "cuda_opencl/opencl/opencl.nvi",
-            "cuda_profiler_api/cuda_profiler_api/cuda_profiler_api.nvi",
-            "cuda_sanitizer_api/sanitizer/sanitizer.nvi",
-            "cuda_tileiras/tileiras/tileiras.nvi",
-            "CUDAToolkit/CUDAToolkit.nvi",
-            "libcublas/cublas_dev/cublas_dev.nvi",
-            "libcublas/cublas/cublas.nvi",
-            "libcufft/cufft_dev/cufft_dev.nvi",
-            "libcufft/cufft/cufft.nvi",
-            "libcurand/curand_dev/curand_dev.nvi",
-            "libcurand/curand/curand.nvi",
-            "libcusolver/cusolver_dev/cusolver_dev.nvi",
-            "libcusolver/cusolver/cusolver.nvi",
-            "libcusparse/cusparse_dev/cusparse_dev.nvi",
-            "libcusparse/cusparse/cusparse.nvi",
-            "libnpp/npp_dev/npp_dev.nvi",
-            "libnpp/npp/npp.nvi",
-            "libnvjitlink/nvjitlink/nvjitlink.nvi",
-            "libnvjpeg/nvjpeg_dev/nvjpeg_dev.nvi",
-            "libnvjpeg/nvjpeg/nvjpeg.nvi",
-            "libnvfatbin/nvfatbin/nvfatbin.nvi",
-            "libnvptxcompiler/libnvptxcompiler/libnvptxcompiler.nvi",
-            "libnvvm/nvvm/nvvm.nvi",
-            "visual_studio_integration/CUDAVisualStudioIntegration/CUDAVisualStudioIntegration.nvi"
+            "cccl",
+            "cuda_crt",
+            "cuda_cudart",
+            "cuda_cuobjdump",
+            "cuda_cupti",
+            "cuda_cuxxfilt",
+            "cuda_nvcc",
+            "cuda_nvdisasm",
+            "cuda_nvml_dev",
+            "cuda_nvprune",
+            "cuda_nvrtc",
+            "cuda_nvtx",
+            "cuda_profiler_api",
+            "cuda_sanitizer_api",
+            "libcublas",
+            "libcufft",
+            "libcurand",
+            "libcusolver",
+            "libcusparse",
+            "libnpp",
+            "libnvfatbin",
+            "libnvjitlink",
+            "libnvjpeg",
+            "libnvptxcompiler",
+            "libnvvm",
+            "cuda_tileiras",
         ]
 
-        if self.settings.arch == "armv8":
-            components.append("libcudla/cudla/cudla.nvi")
+        platform_components = {
+            "linux-x86_64": ["libcufile", "cuda_sandbox_dev", "cuda_opencl", "cuda_culibos", "libcuobjclient"],
+            "linux-sbsa": ["libcufile", "cuda_sandbox_dev", "cuda_culibos", "cuda_compat_orin", "libcudla", "libcuobjclient"],
+            "windows-x86_64": ["cuda_opencl", "visual_studio_integration"],
+            "windows-arm64": ["cuda_opencl", "visual_studio_integration", "libcudla"],
+        }
+        components += platform_components.get(cuda_platform, [])
 
-        for nvi_file in components:
-            source_folder = os.path.dirname(nvi_file)
-            self.output.info(f"Component folder: {source_folder}")
-            full_nvi_file = f"{self.build_folder}/{nvi_file}"
+        for component_name, data in cuda_distrib.items():
+            if component_name not in components:
+                self.output.info(f"Skipping {component_name}")
+                continue
+            else:
+                self.output.info(f"About to download {component_name} for {cuda_platform}")
 
-            tree = ET.parse(full_nvi_file).getroot()
+            url = f"{base_url}/{data[cuda_platform]['relative_path']}"
+            checksum = data[cuda_platform]['sha256']
 
-            for x in tree.findall("phases/standard[@phase='copyFiles']/copyFile"):
-                if 'source' in x.attrib:
-                    continue
+            get(self, url, sha256=checksum, destination="cuda", strip_root=True, keep_permissions=False)
+            rename(self, f"{self.build_folder}/cuda/LICENSE", f"LICENSE_{component_name}")
+        if self.settings.os == "Linux":
+            # When crossbuilding, point nvcc to the target directory in the "host" package (for the target architecture),
+            # rather than have it look relative to itself (which is the current architecture of the build machine)
+            replace_in_file(self, "cuda/bin/nvcc.profile", '$(TOP)/$(_TARGET_DIR_)/', '$(CONAN_CUDA_TARGET_DIR)/')
+            replace_in_file(self, "cuda/bin/nvcc.profile", "lib$(_TARGET_SIZE_)", "lib" )
+        else:
+            # When cross-building, get nvcc to locate libraries in host package
+            replace_in_file(
+                self,
+                "cuda/bin/nvcc.profile",
+                'LIBRARIES        =+ $(_SPACE_) "/LIBPATH:$(TOP)/lib/$(_WIN_PLATFORM_)"',
+                'CONAN_CUDA_LIB_DIR ?= $(TOP)/lib/$(_WIN_PLATFORM_)\n'
+                'LIBRARIES        =+ $(_SPACE_) "/LIBPATH:$(CONAN_CUDA_LIB_DIR)"',
+            )
 
-                target = x.attrib['target']
-                rel_dir = os.path.dirname(target)
-                filename = os.path.basename(target)
+    def package(self):
+        copy(self, "LICENSE*", src=self.build_folder, dst=os.path.join(self.package_folder, "licenses"))
 
-                src = os.path.join(self.build_folder, source_folder, rel_dir)
-                dest = os.path.join(self.package_folder, rel_dir)
-                copy(self, filename, src, dest, keep_path=False)
+        for folder in ["bin", "nvml", "nvvm", "compat_orin"]:
+            copy(self, "*", src=os.path.join(self.build_folder, "cuda", folder), dst=os.path.join(self.package_folder, folder))
+
+        if self.settings.os == "Linux":
+            arch = "sbsa" if self.settings.arch == "armv8" else str(self.settings.arch)
+            targets_folder = f"targets/{arch}-linux"
+            copy(self, "*", src=os.path.join(self.build_folder, "cuda", "lib"), dst=os.path.join(self.package_folder, targets_folder, "lib"))
+            copy(self, "*", src=os.path.join(self.build_folder, "cuda", "include"), dst=os.path.join(self.package_folder, targets_folder, "include"))
+            copy(self, "*", src=os.path.join(self.build_folder, "cuda", "res"), dst=os.path.join(self.package_folder, targets_folder, "res"))
+
+            include_symlink = Path(f"targets/{arch}-linux/include")
+            lib64_symlink = Path(f"targets/{arch}-linux/lib")
+            res_symlink = Path(f"targets/{arch}-linux/res")
+            include = Path(os.path.join(self.package_folder, "include"))
+            lib = Path(os.path.join(self.package_folder, "lib64"))
+            res = Path(os.path.join(self.package_folder, "res"))
+            include.symlink_to(include_symlink)
+            lib.symlink_to(lib64_symlink)
+            res.symlink_to(res_symlink)
+        elif self.settings.os == "Windows":
+            for folder in ["compute-sanitizer", "include", "lib"]:
+                copy(self, "*", src=os.path.join(self.build_folder, "cuda", folder), dst=os.path.join(self.package_folder, folder))
+
+            copy(self, "*", src=os.path.join(self.build_folder, "cuda", "visual_studio_integration"),
+                            dst=os.path.join(self.package_folder, "extras", "visual_studio_integration") )
 
     def package_id(self):
         self.info.settings.rm_safe("compiler")
@@ -122,24 +142,36 @@ class CudaToolkitConan(ConanFile):
         self.cpp_info.set_property("cmake_find_mode", "none") # but don't generate it
         self.cpp_info.set_property("cmake_target_name", "CUDA::toolkit")
 
-        self.buildenv_info.define_path("CUDACXX", os.path.join(self.package_folder, "bin", "nvcc.exe"))
+        nvcc = "nvcc.exe" if self.settings.os == "Windows" else "nvcc"
+        self.buildenv_info.define_path("CUDACXX", os.path.join(self.package_folder, "bin", nvcc))
 
-        arch = "arm64" if self.settings.arch == "armv8" else "x64"
         if not self.settings_target:
+            arch = "sbsa" if self.settings.arch == "armv8" else str(self.settings.arch)
             self.buildenv_info.define_path("CUDAToolkit_ROOT", self.package_folder)
-            self.buildenv_info.define_path("CONAN_CUDA_LIB_DIR", os.path.join(self.package_folder, "lib", arch).replace("\\", "/"))
-       
-        self.cpp_info.libdirs = [f"lib/{arch}", f"nvvm/lib/{arch}"]
-        self.cpp_info.bindirs = ["bin", f"bin/{arch}", "nvvm/lib"]
+            self.buildenv_info.define_path("CONAN_CUDA_TARGET_DIR", os.path.join(self.package_folder, "targets", f"{arch}-linux"))
+            if self.settings.os == "Windows":
+                win_arch = "arm64" if self.settings.arch == "armv8" else "x64"
+                self.buildenv_info.define_path("CONAN_CUDA_LIB_DIR", os.path.join(self.package_folder, "lib", win_arch).replace("\\", "/"))
 
-        # The following only effect CMake generator is Visual Studio
-        package_folder = f"{self.package_folder}".replace('\\', '/')
-        self.conf_info.define("tools.cmake.cmaketoolchain:toolset_cuda", package_folder)
+        if self.settings.os == "Linux":
+            self.cpp_info.libdirs = ["lib64"]
+        else:
+            arch = "arm64" if self.settings.arch == "armv8" else "x64"
+            self.cpp_info.libdirs = [f"lib/{arch}", f"nvvm/lib/{arch}"]
+            # nvvm64 dll is in nvvm/bin/x64 for x86_64, but directly in nvvm/bin for arm64
+            self.cpp_info.bindirs = ["bin", f"bin/{arch}", "nvvm/bin/x64" if arch == "x64" else "nvvm/bin"]
+
+        if self.settings_build.os == "Windows":
+            # Only has effect when Windows and the CMake generator is Visual Studio
+            package_folder = f"{self.package_folder}".replace('\\', '/')
+            self.conf_info.define("tools.cmake.cmaketoolchain:toolset_cuda", package_folder)
 
         if self.settings_target and self.settings_target.get_safe("build_type"):
-            arch = "arm64" if self.settings_target.arch == "armv8" else "x64"
             self.conf_info.update("tools.cmake.cmaketoolchain:extra_variables",
-                                    {"CMAKE_TRY_COMPILE_CONFIGURATION": str(self.settings_target.build_type),
-                                     "CMAKE_TRY_COMPILE_PLATFORM_VARIABLES": "CMAKE_VS_GLOBALS",
-                                     "CMAKE_VS_GLOBALS": f"CudaToolkitLibDir=$ENV{{CUDAToolkit_ROOT}}/lib/{arch}"})
-        
+                                    {"CMAKE_TRY_COMPILE_CONFIGURATION": str(self.settings_target.build_type)})
+            if self.settings_target.os == "Windows":
+                # Visual Studio generator: point the CUDA MSBuild integration to the libraries for the target architecture
+                target_arch = "arm64" if self.settings_target.arch == "armv8" else "x64"
+                self.conf_info.update("tools.cmake.cmaketoolchain:extra_variables",
+                                        {"CMAKE_TRY_COMPILE_PLATFORM_VARIABLES": "CMAKE_VS_GLOBALS",
+                                         "CMAKE_VS_GLOBALS": f"CudaToolkitLibDir=$ENV{{CUDAToolkit_ROOT}}/lib/{target_arch}"})

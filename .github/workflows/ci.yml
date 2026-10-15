@@ -24,6 +24,10 @@ jobs:
             cuda-version: "13.3"
           - os: ubuntu-24.04-arm
             cuda-version: "13.3"
+          - os: ubuntu-latest
+            cuda-version: "13.4"
+          - os: ubuntu-24.04-arm
+            cuda-version: "13.4"
           # Windows:
           # cuda <13.2 requires Visual Studio 2022, available on windows-2022 runner
           - os: windows-2022
@@ -35,7 +39,7 @@ jobs:
             cuda-version: "13.2"
           - os: windows-latest
             cuda-version: "13.3"
-          # 13.4.0-preview developer preview: Windows x86_64 and arm64
+          # cuda >=13.4 supports Windows arm64
           - os: windows-latest
             cuda-version: "13.4"
             cross-arch: "armv8" # test x86_64 -> arm64 cross-building, in addition to native
@@ -69,39 +73,38 @@ jobs:
 
       - name: conan test cuda-toolkit (cross-building for ${{ matrix.cross-arch }})
         if: matrix.cross-arch != ''
-        run: conan test recipes/cuda-toolkit/${{ matrix.cuda-version }}/test_package cuda-toolkit/13.4.0-preview -s arch=${{ matrix.cross-arch }} -c tools.cmake.cmaketoolchain:generator=Ninja
+        run: conan test recipes/cuda-toolkit/${{ matrix.cuda-version }}/test_package cuda-toolkit/13.4.3 -s arch=${{ matrix.cross-arch }} -c tools.cmake.cmaketoolchain:generator=Ninja
 
       - name: build cuda-samples
         if: (matrix.cuda-version == '13.2' || (matrix.cuda-version == '13.4' && startsWith(matrix.os, 'windows')))
         working-directory: samples/cuda-samples
         run: |
           conan source .
-          conan install . --build=missing -cc core.version_ranges:resolve_prereleases=True
-          conan build . -cc core.version_ranges:resolve_prereleases=True
+          conan install . --build=missing
+          conan build .
 
       # Build llama-cpp for Windows arm64, both natively and crossbuilt from x86_64
       - name: conan create llama-cpp
         if: matrix.cuda-version == '13.4' && startsWith(matrix.os, 'windows')
         working-directory: samples/llama-cpp
-        run: conan create all --version=b6565 -cc core.version_ranges:resolve_prereleases=True --build=missing -pr clang-cl-arm64
+        run: conan create all --version=b6565 --build=missing -pr clang-cl-arm64
 
-      # Skip the following for 13.4-preview
       - name: conan create cudnn
-        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
+        if: ${{ !contains(matrix.os, '-arm') }}
         run: conan create recipes/cudnn/9.x --version 9.24.0 --build=missing
 
       - name: conan create cudnn-frontend
-        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
+        if: ${{ !contains(matrix.os, '-arm') }}
         run: conan create recipes/cudnn-frontend/all --version 1.12.1
 
       - name: conan create cudss
-        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
+        if: ${{ !contains(matrix.os, '-arm') }}
         run: conan create recipes/cudss/0.7.1 --version 0.7.1
 
       - name: conan create cusparselt
-        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
+        if: ${{ !contains(matrix.os, '-arm') }}
         run: conan create recipes/cusparselt/0.8.1 --version 0.8.1
 
       - name: conan create cutlass
-        if: matrix.cuda-version != '13.4' && !contains(matrix.os, '-arm')
+        if: ${{ !contains(matrix.os, '-arm') }}
         run: conan create recipes/cutlass/all --version 4.3.5
