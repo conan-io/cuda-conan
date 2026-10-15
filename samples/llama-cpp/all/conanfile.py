@@ -86,6 +86,10 @@ class LlamaCppConan(ConanFile):
         if cross_building(self):
             tc.variables["LLAMA_NATIVE"] = False
             tc.variables["GGML_NATIVE_DEFAULT"] = False
+        if self.settings.os == "Windows" and self.settings.arch == "armv8":
+            # GGML_NATIVE enables SVE when the build machine supports it,
+            # and ggml then includes <sys/prctl.h>, which does not exist on Windows
+            tc.cache_variables["GGML_NATIVE"] = False
 
         tc.variables["GGML_BUILD_TESTS"] = False
         # Follow with_examples when newer versions can compile examples,
