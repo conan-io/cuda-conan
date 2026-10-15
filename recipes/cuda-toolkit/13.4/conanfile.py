@@ -17,10 +17,6 @@ class CudaToolkitConan(ConanFile):
     description = "A development environment for creating high performance GPU-accelerated applications"
     settings = "os", "arch", "compiler", "build_type"
 
-    @property
-    def _windows_arch(self):
-        return "arm64" if self.settings.arch == "armv8" else "x64"
-
     def validate(self):
         if self.settings.os not in ["Windows", "Linux"]:
             raise ConanInvalidConfiguration("Operating system not supported")
@@ -35,10 +31,12 @@ class CudaToolkitConan(ConanFile):
         json_content = load(self, distrib)
         cuda_distrib = json.loads(json_content)
 
-        if self.settings.os == "Linux":
-            cuda_platform = "linux-sbsa" if self.settings.arch == "armv8" else "linux-x86_64"
+        if self.settings.os == "Linux" and self.settings.arch == "armv8":
+            cuda_platform = "linux-sbsa"
+        elif self.settings.os == "Windows" and self.settings.arch == "armv8":
+            cuda_platform = "windows-arm64"
         else:
-            cuda_platform = "windows-arm64" if self.settings.arch == "armv8" else "windows-x86_64"
+            cuda_platform = f"{str(self.settings.os).lower()}-{self.settings.arch}"
 
         self.output.info(f"About to download CUDA toolkit components for {cuda_platform}")
 
@@ -148,18 +146,17 @@ class CudaToolkitConan(ConanFile):
         self.buildenv_info.define_path("CUDACXX", os.path.join(self.package_folder, "bin", nvcc))
 
         if not self.settings_target:
+            arch = "sbsa" if self.settings.arch == "armv8" else str(self.settings.arch)
             self.buildenv_info.define_path("CUDAToolkit_ROOT", self.package_folder)
-            if self.settings.os == "Linux":
-                arch = "sbsa" if self.settings.arch == "armv8" else str(self.settings.arch)
-                self.buildenv_info.define_path("CONAN_CUDA_TARGET_DIR", os.path.join(self.package_folder, "targets", f"{arch}-linux"))
-            else:
-                lib_dir = os.path.join(self.package_folder, "lib", self._windows_arch).replace("\\", "/")
-                self.buildenv_info.define_path("CONAN_CUDA_LIB_DIR", lib_dir)
+            self.buildenv_info.define_path("CONAN_CUDA_TARGET_DIR", os.path.join(self.package_folder, "targets", f"{arch}-linux"))
+            if self.settings.os == "Windows":
+                win_arch = "arm64" if self.settings.arch == "armv8" else "x64"
+                self.buildenv_info.define_path("CONAN_CUDA_LIB_DIR", os.path.join(self.package_folder, "lib", win_arch).replace("\\", "/"))
 
         if self.settings.os == "Linux":
             self.cpp_info.libdirs = ["lib64"]
         else:
-            arch = self._windows_arch
+            arch = "arm64" if self.settings.arch == "armv8" else "x64"
             self.cpp_info.libdirs = [f"lib/{arch}", f"nvvm/lib/{arch}"]
             # nvvm64 dll is in nvvm/bin/x64 for x86_64, but directly in nvvm/bin for arm64
             self.cpp_info.bindirs = ["bin", f"bin/{arch}", "nvvm/bin/x64" if arch == "x64" else "nvvm/bin"]
@@ -170,12 +167,11 @@ class CudaToolkitConan(ConanFile):
             self.conf_info.define("tools.cmake.cmaketoolchain:toolset_cuda", package_folder)
 
         if self.settings_target and self.settings_target.get_safe("build_type"):
-            extra_variables = {"CMAKE_TRY_COMPILE_CONFIGURATION": str(self.settings_target.build_type)}
+            self.conf_info.update("tools.cmake.cmaketoolchain:extra_variables",
+                                    {"CMAKE_TRY_COMPILE_CONFIGURATION": str(self.settings_target.build_type)})
             if self.settings_target.os == "Windows":
                 # Visual Studio generator: point the CUDA MSBuild integration to the libraries for the target architecture
                 target_arch = "arm64" if self.settings_target.arch == "armv8" else "x64"
-                extra_variables.update({
-                    "CMAKE_TRY_COMPILE_PLATFORM_VARIABLES": "CMAKE_VS_GLOBALS",
-                    "CMAKE_VS_GLOBALS": f"CudaToolkitLibDir=$ENV{{CUDAToolkit_ROOT}}/lib/{target_arch}",
-                })
-            self.conf_info.update("tools.cmake.cmaketoolchain:extra_variables", extra_variables)
+                self.conf_info.update("tools.cmake.cmaketoolchain:extra_variables",
+                                        {"CMAKE_TRY_COMPILE_PLATFORM_VARIABLES": "CMAKE_VS_GLOBALS",
+                                         "CMAKE_VS_GLOBALS": f"CudaToolkitLibDir=$ENV{{CUDAToolkit_ROOT}}/lib/{target_arch}"})
