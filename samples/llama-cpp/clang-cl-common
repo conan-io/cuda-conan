@@ -31,3 +31,4 @@ os=Windows
 tools.cmake.cmaketoolchain:generator=Ninja
 tools.build:compiler_executables={"c": "clang-cl", "cpp": "clang-cl"}
 tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_CUDA_ARCHITECTURES':'87-real'}
+llama-cpp/*:tools.cmake.cmaketoolchain:extra_variables*={'GGML_NATIVE':'OFF'}

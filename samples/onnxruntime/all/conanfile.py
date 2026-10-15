@@ -74,7 +74,7 @@ class OnnxRuntimeConan(ConanFile):
             self.requires("pthreadpool/cci.20231129")
         if self.options.with_cuda:
             self.requires("cutlass/4.3.5")
-            self.requires("cuda-toolkit/[>=12 <14]")
+            self.requires("cuda-toolkit/[>=12 <13.3]")
             self.requires("cudnn/[>=9.0 <10]")
             self.requires("cudnn-frontend/[>=1.0 <2]")
         if self.options.get_safe("with_tensorrt"):
