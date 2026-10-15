@@ -20,6 +20,11 @@ class libtorchTestConan(ConanFile):
         cmake_layout(self)
 
     def test(self):
-        if can_run(self):
-            cmd = os.path.join(self.cpp.build.bindir, "test_package")
-            self.run(cmd, env="conanrun")
+        if not can_run(self):
+            return
+        if self.settings.os in ("Linux", "FreeBSD"):
+            if self.dependencies["libtorch"].options.get_safe("with_cuda"):
+                self.output.warning("Skipping the test run: the NVIDIA driver (libcuda.so.1) not available in CI")
+                return
+        cmd = os.path.join(self.cpp.build.bindir, "test_package")
+        self.run(cmd, env="conanrun")

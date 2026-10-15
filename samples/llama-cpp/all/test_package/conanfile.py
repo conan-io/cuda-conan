@@ -21,6 +21,11 @@ class TestPackageConan(ConanFile):
         cmake.build()
 
     def test(self):
-        if can_run(self):
-            bin_path = os.path.join(self.cpp.build.bindir, "test_package")
-            self.run(bin_path, env="conanrun")
+        if not can_run(self):
+            return
+        if self.settings.os in ("Linux", "FreeBSD"):
+            if self.dependencies["llama-cpp"].options.get_safe("with_cuda"):
+                self.output.warning("Skipping the test run: the NVIDIA driver (libcuda.so.1) not available in CI")
+                return
+        bin_path = os.path.join(self.cpp.build.bindir, "test_package")
+        self.run(bin_path, env="conanrun")
