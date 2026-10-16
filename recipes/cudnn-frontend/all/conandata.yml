@@ -1,4 +1,7 @@
 sources:
+  "1.30.0":
+    url: "https://github.com/NVIDIA/cudnn-frontend/archive/refs/tags/v1.30.0.tar.gz"
+    sha256: "2e6a28661b91c0f43c2b24809750b480a93975bcf949c9715e540a7ab8575b31"
   "1.26.0":
     url: "https://github.com/NVIDIA/cudnn-frontend/archive/refs/tags/v1.26.0.tar.gz"
     sha256: "f88361fb714589c970bac2ab56d6a7843722be08ca5ba226484de3fa46fd22cf"
