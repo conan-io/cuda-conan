@@ -95,7 +95,9 @@ jobs:
 
       - name: conan create cudnn-frontend
         if: ${{ !contains(matrix.os, '-arm') }}
-        run: conan create recipes/cudnn-frontend/all --version 1.12.1
+        run: |
+          conan create recipes/cudnn-frontend/all --version 1.12.1
+          conan create recipes/cudnn-frontend/all --version 1.30.0
 
       - name: conan create cudss
         if: ${{ !contains(matrix.os, '-arm') }}

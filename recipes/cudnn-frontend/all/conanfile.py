@@ -4,6 +4,7 @@ from conan import ConanFile
 from conan.tools.build import check_min_cppstd
 from conan.tools.files import copy, get
 from conan.tools.layout import basic_layout
+from conan.tools.scm import Version
 
 
 required_conan_version = ">=2.1.0"
@@ -16,12 +17,16 @@ class CudnnFrontendConan(ConanFile):
         "cuDNN C backend, providing higher-level graph and operation abstractions."
     )
     license = "MIT"
-    url = "https://github.com/conan-io/conan-center-index"
+    url = "https://github.com/conan-io/cuda-conan"
     homepage = "https://github.com/NVIDIA/cudnn-frontend"
     topics = ("cudnn", "cuda", "nvidia", "deep-learning", "header-only")
     package_type = "header-library"
     settings = "os", "arch", "compiler", "build_type"
     no_copy_source = True
+
+    def configure(self):
+        if Version(self.version) >= "1.30.0":
+            self.license = "Apache-2.0", "MIT"
 
     def layout(self):
         basic_layout(self, src_folder="src")
@@ -42,9 +47,11 @@ class CudnnFrontendConan(ConanFile):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
 
     def package(self):
-        copy(self, "LICENSE.txt",
-             src=self.source_folder,
-             dst=os.path.join(self.package_folder, "licenses"))
+        for license_file in ("LICENSE.txt", "LICENSE-MIT.txt", "NOTICE",
+                             "LICENSING.md", "THIRD_PARTY_LICENSES.txt"):
+            copy(self, license_file,
+                 src=self.source_folder,
+                 dst=os.path.join(self.package_folder, "licenses"))
         copy(self, "*.h",
              src=os.path.join(self.source_folder, "include"),
              dst=os.path.join(self.package_folder, "include"))
