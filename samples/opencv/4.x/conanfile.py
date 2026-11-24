@@ -167,10 +167,10 @@ class OpenCVConan(ConanFile):
         "with_ipp": False,
         "with_eigen": True,
         "with_opencl": False,
-        "with_cuda": False,
-        "with_cublas": False,
-        "with_cufft": False,
-        "with_cudnn": False,
+        "with_cuda": True,
+        "with_cublas": True,
+        "with_cufft": True,
+        "with_cudnn": True,
         "cuda_arch_bin": None,
         "cpu_baseline": None,
         "cpu_dispatch": None,
@@ -1134,7 +1134,7 @@ class OpenCVConan(ConanFile):
             # [platform_requires]
             # cuda-toolkit/<version>
             # cudnn/<version>
-            self.requires("cuda-toolkit/[>=12 <13]")
+            self.requires("cuda-toolkit/[>=12 <14]")
             if self.options.with_cudnn:
                 self.requires("cudnn/[>=9.0 <10]")
 
