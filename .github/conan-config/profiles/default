@@ -9,6 +9,8 @@ tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_CUDA_ARCHITECTURES':'75'}
 {% if platform.system() == "Linux" %}
 tools.system.package_manager:mode=install
 tools.system.package_manager:sudo=True
+# CI runners have no NVIDIA driver, run CUDA binaries against the libcuda.so stub from cuda-toolkit
+cuda-toolkit/*:user.cuda-toolkit:stub_driver_runtime=True
 {% endif %}
 
 cuda-samples/*:tools.cmake.cmaketoolchain:generator=Ninja
