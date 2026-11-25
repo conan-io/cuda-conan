@@ -12,11 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             cuda-version: "12.9"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             cuda-version: "13.0"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             cuda-version: "13.2"
           - os: ubuntu-24.04-arm
             cuda-version: "13.2"
@@ -35,9 +35,9 @@ jobs:
           - os: windows-2022
             cuda-version: "13.0"
           # cuda >=13.2 can run on windows-latest (Visual Studio 2026)
-          - os: windows-latest
+          - os: windows-2022
             cuda-version: "13.2"
-          - os: windows-latest
+          - os: windows-2022
             cuda-version: "13.3"
           # cuda >=13.4 supports Windows arm64
           - os: windows-latest
