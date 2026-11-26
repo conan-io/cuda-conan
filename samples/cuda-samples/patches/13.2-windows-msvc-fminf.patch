@@ -1,0 +1,25 @@
+Do not define host fminf/fmaxf in helper_math.h when building with MSVC.
+Recent MSVC versions (VS 2026, 14.5x) treat them as intrinsics and fail with
+error C2169: 'fminf': intrinsic function, cannot be defined.
+The UCRT <math.h> already provides both functions.
+
+diff --git a/Common/helper_math.h b/Common/helper_math.h
+index 6d2f63a..0fd5909 100644
+--- a/Common/helper_math.h
++++ b/Common/helper_math.h
+@@ -55,6 +55,7 @@ typedef unsigned short ushort;
+ // host implementations of CUDA functions
+ ////////////////////////////////////////////////////////////////////////////////
+ 
++#if !defined(_MSC_VER)
+ inline float fminf(float a, float b)
+ {
+     return a < b ? a : b;
+@@ -64,6 +65,7 @@ inline float fmaxf(float a, float b)
+ {
+     return a > b ? a : b;
+ }
++#endif
+ 
+ inline int max(int a, int b)
+ {
