@@ -10,7 +10,8 @@
     stderr=subprocess.DEVNULL
 ).decode().strip() %}
 
-{# Read the clang-cl version from its manifest file inside the VS install — no dev prompt needed #}
+{# Use the clang-cl bundled with VS: the MSVC STL only supports the Clang version shipped with it,
+   and a standalone LLVM found first in PATH can be too old for it #}
 {% set clang_exe = vswhere + '\\VC\\Tools\\Llvm\\x64\\bin\\clang-cl.exe' %}
 {% set clang_version = subprocess.check_output(
     [clang_exe, '--version'],
@@ -29,6 +30,6 @@ os=Windows
 
 [conf]
 tools.cmake.cmaketoolchain:generator=Ninja
-tools.build:compiler_executables={"c": "clang-cl", "cpp": "clang-cl"}
+tools.build:compiler_executables={"c": "{{ clang_exe | replace('\\', '/') }}", "cpp": "{{ clang_exe | replace('\\', '/') }}"}
 tools.cmake.cmaketoolchain:extra_variables*={'CMAKE_CUDA_ARCHITECTURES':'87-real'}
 llama-cpp/*:tools.cmake.cmaketoolchain:extra_variables*={'GGML_NATIVE':'OFF'}
