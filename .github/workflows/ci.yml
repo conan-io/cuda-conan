@@ -29,18 +29,19 @@ jobs:
           - os: ubuntu-24.04-arm
             cuda-version: "13.4"
           # Windows:
-          # cuda <13.2 requires Visual Studio 2022, available on windows-2022 runner
+          # x86_64 jobs are pinned to windows-2022 (Visual Studio 2022, MSVC 14.44).
+          # windows-latest ships MSVC 14.52, which breaks nvcc for cuda 13.2/13.3
+          # and the cuda-samples build for cuda 13.4.
           - os: windows-2022
             cuda-version: "12.9"
           - os: windows-2022
             cuda-version: "13.0"
-          # cuda >=13.2 can run on windows-latest (Visual Studio 2026)
           - os: windows-2022
             cuda-version: "13.2"
           - os: windows-2022
             cuda-version: "13.3"
           # cuda >=13.4 supports Windows arm64
-          - os: windows-latest
+          - os: windows-2022
             cuda-version: "13.4"
             cross-arch: "armv8" # test x86_64 -> arm64 cross-building, in addition to native
           - os: windows-11-arm

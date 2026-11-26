@@ -20,9 +20,7 @@ class cuda_samplesRecipe(ConanFile):
         if platform.system() == "Windows":
             # Note: conditional patches are not good practice, but this isn't a
             # packaged recipe. need a more robust approach.
-            for patch_file in ["13.2-windows-fixes.patch",
-                               "13.2-windows-fixes-arm64.patch",
-                               "13.2-windows-msvc-fminf.patch"]:
+            for patch_file in ["13.2-windows-fixes.patch", "13.2-windows-fixes-arm64.patch"]:
                 patch(self, patch_file=os.path.join(self.export_sources_folder, "patches", patch_file))
             # Rename the GL folder and use these from Conan
             rename(self, 
